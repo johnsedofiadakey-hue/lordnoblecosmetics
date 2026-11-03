@@ -1,0 +1,17 @@
+node_modules
+dist
+.firebase
+.DS_Store
+.env.local
+*.local
+firebase-debug.log
+firebase-debug.*.log
+firestore-debug.log
+ui-debug.log
+functions/.secret.local
+*-service-account*.json
+# Client originals stay private until their use is approved
+design-assets/client-supplied/
+
+# Local Claude Code preview config
+.claude/

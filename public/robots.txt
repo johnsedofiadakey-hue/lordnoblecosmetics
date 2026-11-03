@@ -1,0 +1,9 @@
+# Lordnoble Cosmetics
+User-agent: *
+Allow: /
+# Staff system, checkout and private order-tracking links are not for search engines.
+Disallow: /admin
+Disallow: /checkout
+Disallow: /t/
+
+Sitemap: https://lordnoblecosmetics.com/sitemap.xml

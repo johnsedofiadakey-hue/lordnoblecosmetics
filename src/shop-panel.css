@@ -1,0 +1,8 @@
+/* The checkout drawer's frame (its contents are styled in panels.css). */
+.shop-panel { position: fixed; inset: 0; z-index: 60; pointer-events: none; }
+.shop-panel.open { pointer-events: auto; }
+.panel-backdrop { position: absolute; inset: 0; opacity: 0; border: 0; background: rgba(43,15,22,.38); transition: opacity .4s; }
+.shop-panel.open .panel-backdrop { opacity: 1; }
+.panel-sheet { position: absolute; right: 0; top: 0; width: min(700px, 100vw); min-height: 100%; max-height: 100%; overflow: auto; padding: 35px 48px 55px; color: var(--ink); background: var(--ivory); transform: translateX(105%); transition: transform .55s cubic-bezier(.2,.8,.2,1); }
+.shop-panel.open .panel-sheet { transform: none; }
+@media (max-width: 760px) { .panel-sheet { padding: 23px 20px 40px; } }

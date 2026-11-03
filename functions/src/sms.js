@@ -1,0 +1,70 @@
+// Text messages to customers through mNotify (a Ghana SMS provider, BMS API v2 "quick SMS"). Sending never
+// blocks or undoes a sale or an order: a failed text is logged in smsLog and the shop carries on. Nothing is
+// sent unless the owner turns SMS on in Settings and the MNOTIFY_API_KEY secret is set.
+import { logger } from 'firebase-functions'
+import { normalizePhone } from './core/sale.js'
+import { businessDay } from './core/time.js'
+
+// Website orders get two texts: when Paystack confirms the payment (the order is successful) and when it goes
+// out for delivery. Nothing is sent for an order that has only been placed.
+export const DEFAULT_SMS = { enabled: false, senderId: 'Lordnoble', orderPaid: true, outForDelivery: true, saleReceipt: false }
+
+const MNOTIFY_URL = 'https://api.mnotify.com/api/sms/quick'
+const money = (pesewas) => `GHS ${(pesewas / 100).toFixed(2)}`
+
+export function cleanSms(input) {
+  const sms = { ...DEFAULT_SMS, ...(input || {}) }
+  const senderId = String(sms.senderId ?? '').trim()
+  return {
+    enabled: sms.enabled === true,
+    // Sender IDs are registered with the provider: up to 11 letters or digits.
+    senderId: /^[A-Za-z0-9 ]{3,11}$/.test(senderId) ? senderId : DEFAULT_SMS.senderId,
+    // (orderPlaced / orderUpdates were the earlier names of these two switches.)
+    orderPaid: (sms.orderPaid ?? sms.orderPlaced) !== false,
+    outForDelivery: (sms.outForDelivery ?? sms.orderUpdates) !== false,
+    saleReceipt: sms.saleReceipt === true,
+  }
+}
+
+// The words for each message. Kept short: one SMS is 160 characters.
+export function smsText(kind, { ref, total, shopName = 'Lordnoble', phone = '', number, link = '' } = {}) {
+  const call = phone ? ` Questions? Call ${phone}.` : ''
+  // With a tracking link the message stays short: order number, what happened, the link.
+  if (link && kind === 'order_paid') return `${shopName}: your order ${ref} is successful. Paid ${money(total)}. Thank you! Track your order: ${link}`
+  if (link && kind === 'order_out_for_delivery') return `${shopName}: your order ${ref} is on the way to you. Track it: ${link}`
+  switch (kind) {
+    case 'order_placed': return `${shopName}: we have your order ${ref} (${money(total)}). We will call you soon to confirm.${call}`
+    case 'order_paid': return `${shopName}: your order ${ref} is successful. Payment of ${money(total)} received, thank you! We will contact you about delivery.${call}`
+    case 'order_confirmed': return `${shopName}: your order ${ref} is confirmed and being packed.${call}`
+    case 'order_ready': return `${shopName}: your order ${ref} is ready for pickup at our shop.${call}`
+    case 'order_out_for_delivery': return `${shopName}: your order ${ref} is on the way to you.${call}`
+    case 'order_cancelled': return `${shopName}: your order ${ref} was cancelled. If you paid, your refund is on its way.${call}`
+    case 'sale_receipt': return `${shopName}: thank you! Receipt ${number}, total ${money(total)}. Keep this message for returns.`
+    default: return ''
+  }
+}
+
+// ctx: { db, now, secrets: { smsKey }, fetch }. Returns true when the provider accepted the message.
+export async function sendSms(ctx, settings, { to, kind, ref, text }) {
+  const sms = cleanSms(settings?.sms)
+  const key = ctx.secrets?.smsKey
+  const phone = normalizePhone(to)
+  if (!sms.enabled || !key || !phone || !text) return false
+  const local = `0${phone.slice(3)}` // mNotify takes Ghana numbers as 0XXXXXXXXX
+  const log = { at: ctx.now, day: businessDay(ctx.now), kind, ref: ref || null, to: phone, text, ok: false, error: null }
+  try {
+    const response = await (ctx.fetch || fetch)(`${MNOTIFY_URL}?key=${encodeURIComponent(key)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ recipient: [local], sender: sms.senderId, message: text, is_schedule: false, schedule_date: '' }),
+    })
+    const body = await response.json().catch(() => ({}))
+    log.ok = response.ok && (body?.status === 'success' || String(body?.code) === '2000')
+    if (!log.ok) log.error = String(body?.message || `HTTP ${response.status}`).slice(0, 200)
+  } catch (error) {
+    log.error = String(error?.message || error).slice(0, 200)
+  }
+  if (!log.ok) logger.warn('SMS not sent', { kind, ref, error: log.error })
+  await ctx.db.collection('smsLog').add(log).catch(() => {})
+  return log.ok
+}

@@ -1,0 +1,141 @@
+rules_version = '2';
+
+// Website content editor + website orders.
+// Admins are people whose Firebase Auth uid has a document in /admins. That collection can only be
+// changed from the Firebase console (or by the project owner's Google account), never from the website.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isAdmin() { return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+
+    // Shop staff: a profile in /staff written only by Cloud Functions (the owner adds people from the admin).
+    function staffProfile() { return get(/databases/$(database)/documents/staff/$(request.auth.uid)).data; }
+    function isStaff() { return signedIn() && exists(/databases/$(database)/documents/staff/$(request.auth.uid)) && staffProfile().active == true; }
+    function isManager() { return isStaff() && staffProfile().role in ['manager', 'owner']; }
+    function isOwner() { return isStaff() && staffProfile().role == 'owner'; }
+    function stamped() {
+      return request.resource.data.updatedAt == request.time && request.resource.data.updatedBy == request.auth.uid;
+    }
+
+    match /admins/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Public website content. Anyone can read; only admins can edit.
+    match /site/content {
+      allow read: if true;
+      allow write: if (isAdmin() || isOwner()) && stamped()
+        && request.resource.data.keys().hasOnly(['shop', 'brand', 'categories', 'home', 'about', 'tags', 'lines', 'layout', 'pages', 'checkout', 'terms', 'updatedAt', 'updatedBy'])
+        && request.resource.data.shop is map && request.resource.data.home is map
+        && request.resource.data.checkout is map && request.resource.data.terms is map
+        && (!('brand' in request.resource.data) || request.resource.data.brand is map)
+        && (!('about' in request.resource.data) || request.resource.data.about is map)
+        && (!('tags' in request.resource.data) || request.resource.data.tags is map)
+        && (!('lines' in request.resource.data) || (request.resource.data.lines is list && request.resource.data.lines.size() <= 2))
+        && (!('layout' in request.resource.data) || request.resource.data.layout is map)
+        && (!('pages' in request.resource.data) || request.resource.data.pages is map)
+        && (!('categories' in request.resource.data)
+          || (request.resource.data.categories is list && request.resource.data.categories.size() <= 24));
+    }
+    match /site/catalog {
+      allow read: if true;
+      allow write: if (isAdmin() || isOwner()) && stamped()
+        && request.resource.data.keys().hasOnly(['products', 'updatedAt', 'updatedBy'])
+        && request.resource.data.products is list && request.resource.data.products.size() <= 200;
+    }
+
+    // Product reviews. Anyone may send one, but it arrives as "pending" and nobody else sees it until the
+    // owner approves it. The owner may also enter a review a customer sent another way, only with that
+    // customer's permission (source "owner"). Nobody can edit the words of a review or delete one.
+    function reviewFields(data) {
+      return data.name is string && data.name.size() >= 2 && data.name.size() <= 40
+        && data.location is string && data.location.size() <= 40
+        && data.text is string && data.text.size() >= 10 && data.text.size() <= 600
+        && data.rating is int && data.rating >= 1 && data.rating <= 5
+        && data.productId is string && data.productId.size() <= 80
+        && data.createdAt == request.time;
+    }
+    match /reviews/{reviewId} {
+      allow read: if resource.data.status == 'approved' || isAdmin() || isOwner();
+      allow create: if reviewFields(request.resource.data) && (
+        (request.resource.data.keys().hasOnly(['name', 'location', 'text', 'rating', 'productId', 'status', 'source', 'createdAt'])
+          && request.resource.data.status == 'pending' && request.resource.data.source == 'customer')
+        || ((isAdmin() || isOwner())
+          && request.resource.data.keys().hasOnly(['name', 'location', 'text', 'rating', 'productId', 'status', 'source', 'createdAt', 'permission', 'enteredBy'])
+          && request.resource.data.status == 'approved' && request.resource.data.source == 'owner'
+          && request.resource.data.permission == true && request.resource.data.enteredBy == request.auth.uid));
+      allow update: if (isAdmin() || isOwner())
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'reviewedAt', 'reviewedBy'])
+        && request.resource.data.status in ['pending', 'approved', 'rejected']
+        && request.resource.data.reviewedAt == request.time && request.resource.data.reviewedBy == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // A customer's order tracking page (/t/<code>). Written only by Cloud Functions. Anyone with the code can read
+    // that one record (it holds no phone, email or address); nobody can list them, so a code cannot be guessed.
+    match /orderTracking/{code} {
+      allow get: if true;
+      allow list, write: if false;
+    }
+
+    // Which products the website may show as in stock. Written only by Cloud Functions after stock changes.
+    match /site/availability {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Priced baskets waiting for Paystack. Only Cloud Functions touch them; staff never see an unpaid checkout.
+    match /checkouts/{ref} {
+      allow read, write: if false;
+    }
+
+    // Orders from the website checkout. Created by Cloud Functions only after Paystack confirms the payment, so
+    // the browser cannot set its own prices or create an unpaid order. Staff read them; moving an order along goes through Cloud Functions.
+    // Staff may only add their own note. Nobody can delete an order.
+    match /orders/{orderId} {
+      allow create: if false;
+      allow read: if isStaff() || isAdmin();
+      allow update: if isStaff()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['staffNote', 'updatedAt', 'updatedBy'])
+        && request.resource.data.staffNote is string && request.resource.data.staffNote.size() <= 500
+        && request.resource.data.updatedAt == request.time && request.resource.data.updatedBy == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // ── Shop operations. Every write happens in Cloud Functions (functions/src/handlers.js). ──
+    match /staff/{uid} {
+      allow read: if isStaff() || (signedIn() && request.auth.uid == uid);
+      allow write: if false;
+    }
+    match /staffSecrets/{uid} { allow read, write: if false; }
+    match /counters/{name} { allow read, write: if false; }
+    match /requests/{id} { allow read, write: if false; }
+
+    // Everyone at the till: product codes, stock levels (no costs) and sales.
+    match /catalogOps/{productId} { allow read: if isStaff(); allow write: if false; }
+    match /stock/{productId} { allow read: if isStaff(); allow write: if false; }
+    match /sales/{saleId} { allow read: if isStaff(); allow write: if false; }
+
+    // Managers and the owner: costs, batches, stock history, suppliers, deliveries, counts and the activity log.
+    match /catalogCosts/{productId} { allow read: if isManager(); allow write: if false; }
+    match /saleCosts/{saleId} { allow read: if isManager(); allow write: if false; }
+    match /batches/{batchId} { allow read: if isManager(); allow write: if false; }
+    match /movements/{id} { allow read: if isManager(); allow write: if false; }
+    match /suppliers/{id} { allow read: if isManager(); allow write: if false; }
+    match /deliveries/{id} { allow read: if isManager(); allow write: if false; }
+    match /stockCounts/{id} { allow read: if isManager(); allow write: if false; }
+    match /audit/{id} { allow read: if isManager(); allow write: if false; }
+    match /smsLog/{id} { allow read: if isManager(); allow write: if false; }
+
+    // Owner settings (taxes on receipts, SMS). Every till needs them; only the saveShopSettings function writes.
+    match /settings/{name} { allow read: if isStaff(); allow write: if false; }
+
+    // Cash drawers: each cashier sees their own; managers and the owner see all.
+    match /shifts/{id} {
+      allow read: if isManager() || (isStaff() && resource.data.cashier.uid == request.auth.uid);
+      allow write: if false;
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "lordnoble-cosmetics",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:functions": "firebase emulators:exec --only firestore,auth --project demo-lordnoble \"vitest run --config functions/vitest.config.js\"",
+    "dev:emulators": "firebase emulators:start --only firestore,auth,functions,storage --project demo-lordnoble",
+    "dev:local": "vite --mode emulators --port 5182",
+    "seed:emulators": "node scripts/seed-emulators.mjs"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.0.8",
+    "@react-three/fiber": "^9.1.2",
+    "@zxing/browser": "^0.2.1",
+    "@zxing/library": "^0.23.0",
+    "firebase": "^12.19.0",
+    "gsap": "^3.12.7",
+    "lucide-react": "^1.48.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "three": "^0.176.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.4.1",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.7"
+  }
+}
