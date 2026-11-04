@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { ArrowRight, ArrowUpRight, BadgeCheck, Brush, ChevronDown, Droplet, Flower, Flower2, Gem, Gift, Heart, Leaf, Mail, MapPin, Menu, MessageCircle, Phone, PersonStanding, Plus, Search, ShieldCheck, ShoppingBag, ShoppingCart, Smile, Sparkles, Star, Sun, Truck, UserRound, X } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, BadgeCheck, Brush, ChevronDown, Droplet, Flower, Flower2, Gem, Gift, Heart, Leaf, Mail, MapPin, Menu, MessageCircle, Phone, PersonStanding, Plus, Search, ShieldCheck, ShoppingBag, ShoppingCart, Smile, Sparkles, Star, Sun, Truck, X } from 'lucide-react'
 import { canBuy, formatGhs, groupProducts, mergeCatalog, mergeContent, ratingsByProduct } from './cloud/site.js'
 
 // Shared by every public page: website content (from the admin editor), the cart, header, footer and cart panel.
@@ -301,13 +301,11 @@ export function SiteHeader({ dark = true }) {
       <nav className="main-nav" aria-label="Main">{items.map(desktop)}</nav>
       <div className="header-actions">
         {products.length ? <a className="icon-btn" href="/shop#search" aria-label="Search products"><Search {...ICON} /></a> : null}
-        <a className="icon-btn" href="/admin/" aria-label="Staff login" title="Staff login"><UserRound {...ICON} /></a>
         {products.length || count ? <button className="icon-btn cart-btn" onClick={() => openCart()} aria-label={`Open cart, ${count} ${count === 1 ? 'item' : 'items'}`}><ShoppingCart {...ICON} /><span className="cart-count">{count}</span></button> : null}
         <button className="icon-btn menu-btn" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen}>{menuOpen ? <X {...ICON} /> : <Menu {...ICON} />}</button>
       </div>
       <div className={`mobile-nav ${menuOpen ? 'open' : ''}`} aria-hidden={!menuOpen} inert={menuOpen ? undefined : true}>
         {items.map(mobile)}
-        <a href="/admin/" className="sub" onClick={close}>Staff login</a>
       </div>
     </header>
   </div>

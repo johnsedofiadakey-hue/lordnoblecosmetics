@@ -166,6 +166,7 @@ const SHOP_HINTS = {
   deliveryTime: 'e.g. 1 to 2 days',
   returnDays: 'a number, e.g. 7',
   refundDays: 'a number, e.g. 5',
+  fdaNumber: 'shown under the order button on the home page',
   instagram: 'full link, starting with https://',
   tiktok: 'full link, starting with https://',
   facebook: 'full link, starting with https://',

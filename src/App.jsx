@@ -85,7 +85,7 @@ export default function App() {
 
   return <main className="home">
     <SiteHeader />
-    <LordinaHero home={home} shop={content.shop} products={products} />
+    <LordinaHero home={home} shop={content.shop} products={products} payOnline={Boolean(content.checkout?.paystackPublicKey)} />
 
     {/* The owner's order; hidden sections are left out (Admin → Website → Layout and menu). */}
     {content.layout.sections.filter((section) => section.show).map((section) => <Fragment key={section.key}>{sections[section.key]}</Fragment>)}

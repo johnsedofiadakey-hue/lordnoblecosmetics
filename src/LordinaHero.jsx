@@ -12,12 +12,18 @@ function OrderButton({ item, products, shop, label, className }) {
   return <a className={className} href={href} {...(href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})}>{label} <ArrowRight {...ICON} /></a>
 }
 
-export default function LordinaHero({ home, shop, products }) {
+export default function LordinaHero({ home, shop, products, payOnline }) {
   const image = pictureLink(home.heroImage) || HERO_IMAGE
   const secondImage = pictureLink(home.heroSecondImage)
   const range = home.range || []
   const serum = range.find((item) => item.key === 'serum')
   const cream = range.find((item) => item.key === 'cream')
+  // Only what is true: each line appears once the owner has filled in that detail.
+  const facts = [
+    shop.deliveryAreas ? `Delivery to ${shop.deliveryAreas}` : '',
+    payOnline ? 'Pay with MoMo or card' : '',
+    shop.fdaNumber ? `FDA Ghana reg. ${shop.fdaNumber}` : '',
+  ].filter(Boolean)
 
   return <>
     <section className="lordina-hero" aria-labelledby="hero-title">
@@ -29,6 +35,7 @@ export default function LordinaHero({ home, shop, products }) {
           <OrderButton item={serum} products={products} shop={shop} label={home.heroAction || 'Order now'} className="lordina-hero__button" />
           <a className="lordina-hero__link" href="#lordina-range">See all {range.filter((item) => item.show !== false).length} products</a>
         </div>
+        {facts.length ? <ul className="lordina-hero__facts">{facts.map((fact) => <li key={fact}>{fact}</li>)}</ul> : null}
       </div>
       <div className="lordina-hero__portrait">
         <img src={image} alt={home.heroImageAlt || ''} width="956" height="1280" fetchPriority="high" decoding="async" />

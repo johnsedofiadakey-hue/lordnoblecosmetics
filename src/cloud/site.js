@@ -130,6 +130,7 @@ export const SHOP_FIELDS = [
   { key: 'deliveryTime', label: 'Delivery time' },
   { key: 'returnDays', label: 'Days to return an item' },
   { key: 'refundDays', label: 'Days to send a refund' },
+  { key: 'fdaNumber', label: 'FDA Ghana registration number' },
   { key: 'instagram', label: 'Instagram link' },
   { key: 'tiktok', label: 'TikTok link' },
   { key: 'facebook', label: 'Facebook link' },
