@@ -1,5 +1,5 @@
-.home .site-top--dark::after { background: #1a1310; box-shadow: 0 1px 0 rgb(255 248 237 / .14); }
-.home .site-top--dark.is-scrolled::after { box-shadow: 0 10px 26px -16px rgb(0 0 0 / .65); }
+.site-top--dark::after { background: #1a1310; box-shadow: 0 1px 0 rgb(255 248 237 / .14); }
+.site-top--dark.is-scrolled::after { box-shadow: 0 10px 26px -16px rgb(0 0 0 / .65); }
 .site-top--dark .main-nav, .site-top--dark .header-actions { color: #fff8ed; }
 .site-top--dark .main-nav a:hover, .site-top--dark .icon-btn:hover { color: #e3b896; }
 .site-top--dark .main-nav > a[aria-current="page"]::after { background: #e3b896; }

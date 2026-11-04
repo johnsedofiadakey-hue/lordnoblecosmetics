@@ -22,7 +22,7 @@
 /* Cart lines, quantity buttons and the checkout form (delivery details, delivery or pickup, order done). */
 .cart-lines { list-style: none; margin: 0; padding: 0; }
 .cart-line { display: grid; grid-template-columns: 76px 1fr auto; gap: 14px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--line); }
-.cart-line-art { height: 76px; padding: 0; border: 0; border-radius: 12px; background: var(--blush-soft); overflow: hidden; cursor: pointer; }
+.cart-line-art { height: 76px; padding: 0; border: 1px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; cursor: pointer; }
 .cart-line-info { display: grid; gap: 3px; min-width: 0; }
 .cart-line-info .eyebrow { font-size: 10px; }
 .cart-line-info b { font-size: 16px; font-weight: 600; }
@@ -68,7 +68,7 @@
 
 /* Product panel: size picker and photo thumbnails. */
 .sheet-sizes { display: grid; gap: 8px; margin: 4px 0 16px; }
-.sheet-sizes > span { color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+.sheet-sizes > span { color: var(--muted); font-size: 13px; font-weight: 600; }
 .sheet-sizes > div { display: flex; flex-wrap: wrap; gap: 8px; }
 .sheet-sizes button { display: grid; gap: 2px; min-width: 92px; padding: 9px 14px; border: 1px solid var(--line-2); border-radius: 10px; background: #fff; text-align: left; }
 .sheet-sizes button b { color: var(--wine-deep); font-size: 14px; }

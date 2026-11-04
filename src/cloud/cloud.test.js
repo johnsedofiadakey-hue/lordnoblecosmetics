@@ -228,7 +228,7 @@ describe('reviews', () => {
 
 describe('owner-editable lists and layout', () => {
   it('keeps tags unique and starts from the shipped lists', () => {
-    expect(cleanTags(null).needs[0]).toEqual({ label: 'Daily moisture', description: 'Comfort for skin that feels dry.' })
+    expect(cleanTags(null).needs[0]).toEqual({ label: 'Dark spots', description: 'For the look of dark spots and marks.' })
     const tags = cleanTags({ needs: [{ label: ' Hair growth ', description: 'x' }, { label: 'hair growth' }, { label: '' }], ingredients: ['Shea butter', 'shea butter', 'Castor oil'] })
     expect(tags).toEqual({ needs: [{ label: 'Hair growth', description: 'x' }], ingredients: ['Shea butter', 'Castor oil'] })
   })

@@ -48,9 +48,6 @@
 .home .product-card__copy, .shop .product-card__copy { padding: 17px 15px 15px; }
 .home .product-card__name, .shop .product-card__name { font: 500 26px/1.05 var(--serif); }
 .home .product-card__add, .shop .product-card__add { border-radius: 0; }
-.info-page .page-hero, .shop:not(.shop--preview) .page-hero { background: #f6f0e8; }
-.info-page .page-hero h1, .shop:not(.shop--preview) .page-hero h1 { font-weight: 300; font-size: clamp(50px, 6vw, 76px); }
-.info-page .page-hero .gold, .shop:not(.shop--preview) .page-hero .gold { background: none; color: #8a673f; }
 .home .why { margin: 0; padding-top: 55px; padding-bottom: 55px; background: #1c1217; clip-path: none; }
 .home .why h2 { background: none; color: #f8f1e8; font-weight: 300; font-size: clamp(42px, 4.5vw, 64px); }
 .home .why ul { gap: 0 20px; }

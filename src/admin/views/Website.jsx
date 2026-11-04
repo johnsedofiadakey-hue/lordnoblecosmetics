@@ -607,7 +607,7 @@ function TagsTab({ tags, lines, products, onChange }) {
         </div>)}
       </div>
     </Card>
-    <TagList title="Needs (Shop by need)" hint="What customers can shop by, e.g. Glow or Daily moisture. Use cosmetic words, never an illness. Tick them on each product in the Products tab." items={needs} describe used={used('needs')}
+    <TagList title="Needs (Shop by need)" hint="What customers can shop by, e.g. Dark spots or Daily moisture. Use cosmetic words, never an illness. Tick them on each product in the Products tab." items={needs} describe used={used('needs')}
       onRename={(index, label) => onChange({ tags: { ...tags, needs: needs.map((need, i) => (i === index ? { ...need, label } : need)) } }, renameIn('needs', needs[index].label, label))}
       onDescribe={(index, description) => onChange({ tags: { ...tags, needs: needs.map((need, i) => (i === index ? { ...need, description } : need)) } })}
       onMove={(index, step) => onChange({ tags: { ...tags, needs: moved(needs, index, step) } })}

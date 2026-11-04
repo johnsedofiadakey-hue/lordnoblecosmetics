@@ -19,22 +19,24 @@ export default function TermsPage() {
     document.getElementById(window.location.hash.slice(1))?.scrollIntoView()
   }, [])
 
+  // A section whose every line needs a shop detail that is not filled in yet is left out, not shown empty.
+  const sections = terms.sections.map((section) => ({ ...section, lines: fillShopDetails(section.body, shop).split('\n').filter(Boolean) })).filter((section) => section.lines.length)
+
   return <main className="terms-page">
     <SiteHeader />
     <section className="page-hero">
-      <span className="kicker">Last updated {formatDate(terms.updated)}</span>
-      <h1>Terms and <span className="gold">Conditions</span></h1>
-      <p className="page-hero__text">Please read these before you order. They are written in plain words.</p>
+      <h1>Terms and conditions</h1>
+      <p className="page-hero__text">Please read these before you order. Last updated {formatDate(terms.updated)}.</p>
     </section>
     <div className="terms-layout">
       <nav className="terms-toc" aria-label="On this page">
         <b>On this page</b>
-        <ol>{terms.sections.map((section) => <li key={section.title}><a href={`#${sectionId(section.title)}`}>{section.title}</a></li>)}</ol>
+        <ol>{sections.map((section) => <li key={section.title}><a href={`#${sectionId(section.title)}`}>{section.title}</a></li>)}</ol>
       </nav>
       <article className="terms-body">
-        {terms.sections.map((section, index) => <section key={section.title} id={sectionId(section.title)}>
+        {sections.map((section, index) => <section key={section.title} id={sectionId(section.title)}>
           <h2><span>{index + 1}.</span> {section.title}</h2>
-          {fillShopDetails(section.body, shop).split('\n').filter(Boolean).map((line, i) => <p key={i}>{line}</p>)}
+          {section.lines.map((line, i) => <p key={i}>{line}</p>)}
         </section>)}
       </article>
     </div>

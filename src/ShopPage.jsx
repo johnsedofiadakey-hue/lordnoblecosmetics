@@ -82,7 +82,7 @@ export default function ShopPage() {
     <SiteHeader />
 
     <section className="page-hero">
-      <span className="kicker">{pages.shopKicker}</span>
+      {pages.shopKicker ? <span className="kicker">{pages.shopKicker}</span> : null}
       <h1>{heading || <>{pages.shopTitle} {pages.shopAccent ? <span className="gold">{pages.shopAccent}</span> : null}</>}</h1>
       <form className="shop-search" role="search" onSubmit={(event) => event.preventDefault()}>
         <Search {...ICON} />

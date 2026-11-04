@@ -84,7 +84,7 @@ export default function App() {
   const sections = { explore: section_explore, loved: section_loved, why: section_why, reviews: section_reviews, cta: section_cta }
 
   return <main className="home">
-    <SiteHeader dark />
+    <SiteHeader />
     <LordinaHero home={home} shop={content.shop} products={products} />
 
     {/* The owner's order; hidden sections are left out (Admin → Website → Layout and menu). */}

@@ -252,7 +252,8 @@ export function useMenuCategories() {
   return useMemo(() => content.categories.filter((category) => category.image || products.some((product) => product.category === category.name)), [content.categories, products])
 }
 
-export function SiteHeader({ dark = false }) {
+// Dark on every page, like the home page.
+export function SiteHeader({ dark = true }) {
   const { count, openCart, content, groups: products, reviews } = useSite()
   const categories = useMenuCategories()
   const [menuOpen, setMenuOpen] = useState(false)

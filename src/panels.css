@@ -67,7 +67,7 @@
 .sheet-card { position: relative; display: grid; grid-template-columns: 1fr 1fr; width: min(980px, 100%); max-height: min(720px, calc(100svh - 48px)); overflow-y: auto; border-radius: 26px; background: var(--ivory); box-shadow: 0 40px 90px -30px #2b0f16b3; animation: sheetIn .45s cubic-bezier(.2,.8,.2,1) both; overscroll-behavior: contain; }
 .sheet-close { position: absolute; z-index: 3; top: 14px; right: 14px; display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 50%; background: #ffffffcc; color: var(--ink); backdrop-filter: blur(6px); }
 .sheet-close svg { width: 20px; height: 20px; }
-.sheet-art { position: sticky; top: 0; min-height: 460px; background: radial-gradient(circle at 50% 42%, #ffffff 0%, #f1e6e9 62%, #ead6db 100%); }
+.sheet-art { position: sticky; top: 0; min-height: 460px; background: #fff; }
 .sheet-info { padding: 40px 36px 32px; min-width: 0; }
 .sheet-info .eyebrow { color: var(--lav); }
 .sheet-info h2 { margin: 12px 0 6px; font-size: clamp(30px, 3.4vw, 42px); font-weight: 600; letter-spacing: -.03em; line-height: 1.04; }
@@ -101,7 +101,7 @@
 .sheet-related button { display: grid; grid-template-columns: 52px 1fr; gap: 12px; align-items: center; width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 14px; background: #ffffff; color: var(--ink); text-align: left; font-size: 14px; transition: border-color .2s, transform .2s; }
 .sheet-related button:hover { border-color: var(--lav); transform: translateY(-2px); }
 .related-art { display: block; height: 52px; border-radius: 10px; background: #f0e9eb; overflow: hidden; }
-.sheet-related small { display: block; color: var(--lav); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+.sheet-related small { display: block; color: var(--lav); font-size: 12px; }
 .sheet-related em { display: block; font-style: normal; color: #825f68; font-size: 12px; }
 @keyframes sheetIn { from { opacity: 0; transform: translateY(30px) scale(.97); } }
 @keyframes sheetFade { from { opacity: 0; } }

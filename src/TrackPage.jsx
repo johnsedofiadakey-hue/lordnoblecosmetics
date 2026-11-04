@@ -68,8 +68,7 @@ export default function TrackPage() {
   return <main className="info-page track-page">
     <SiteHeader />
     <section className="page-hero">
-      <span className="kicker">Order tracking</span>
-      <h1>Track your <span className="gold">order</span></h1>
+      <h1>Track your order</h1>
       {order?.ref ? <p className="page-hero__text">Order <b>{order.ref}</b></p> : null}
     </section>
     <section className="section track">

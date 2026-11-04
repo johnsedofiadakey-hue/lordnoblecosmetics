@@ -8,8 +8,8 @@ import { checkReview, cleanReview } from './cloud/site.js'
 
 function PageHero({ kicker, title, accent, children }) {
   return <section className="page-hero">
-    <span className="kicker">{kicker}</span>
-    <h1>{title} {accent ? <span className="gold">{accent}</span> : null}</h1>
+    {kicker ? <span className="kicker">{kicker}</span> : null}
+    <h1>{title}{accent ? <> <span className="gold">{accent}</span></> : null}</h1>
     {children}
   </section>
 }
@@ -29,7 +29,7 @@ export function AboutPage() {
       {image ? <div className="about__photo"><img src={image} alt={about.imageAlt || ''} /></div> : null}
       <div className="about__copy">
         {paragraphs.length ? paragraphs.map((part, i) => <p key={i}>{part}</p>)
-          : <p>Discover the Lordina collection of face and body care.</p>}
+          : <p>Lordnoble Cosmetics sells the Lordina range of face and body care.</p>}
         <a className="btn-wine" href="/shop">Shop Lordina <ArrowRight {...ICON} /></a>
       </div>
     </section>
@@ -95,10 +95,10 @@ export function ReviewsPage() {
           <blockquote>“{review.text}”</blockquote>
           <figcaption>— {review.name}{review.location ? `, ${review.location}` : ''}{productName(review.productId) ? <small>{productName(review.productId)}</small> : null}</figcaption>
         </div>
-      </figure>)}</div> : <p className="review-empty">No reviews yet. Be the first to tell others what you think.</p>}
+      </figure>)}</div> : <p className="review-empty">No reviews yet. Bought something from us? Tell other customers what you think below.</p>}
     </section>
     <section className="section write-review" id="write" aria-labelledby="write-title">
-      <h2 id="write-title">Write a <span className="gold">review</span></h2>
+      <h2 id="write-title">Write a review</h2>
       <ReviewForm products={products} />
     </section>
     <SiteFooter />
@@ -130,7 +130,7 @@ export function ContactPage() {
       {cards.length ? <div className="contact-grid">{cards.map(({ Icon, title, text, href, external }) => {
         const inner = <><span className="contact-card__icon"><Icon {...ICON} strokeWidth={1.4} /></span><b>{title}</b><span>{text}</span></>
         return href ? <a key={title} className="contact-card" href={href} {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}>{inner}</a> : <div key={title} className="contact-card">{inner}</div>
-      })}</div> : <p className="review-empty">Our contact details are coming soon.</p>}
+      })}</div> : <p className="review-empty">You can order any Lordina product from <a href="/shop">the shop page</a>.</p>}
       {socials.length ? <div className="contact-social"><span>Follow us</span>{socials.map((item) => <a key={item.name} href={item.href} target="_blank" rel="noreferrer" aria-label={item.name}><SocialIcon name={item.name} /></a>)}</div> : null}
     </section>
     <SiteFooter />

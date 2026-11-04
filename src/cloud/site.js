@@ -10,13 +10,9 @@ export const LINES = [
 
 // Needs a customer can shop by. Cosmetic language only: what a product is for, never a diagnosis.
 export const SHOP_NEEDS = [
-  { id: 'Daily moisture', label: 'Daily moisture', description: 'Comfort for skin that feels dry.' },
-  { id: 'Glow', label: 'Glow', description: 'Radiance and an even-looking finish.' },
-  { id: 'Even-looking tone', label: 'Even-looking tone', description: 'Care for marks and uneven-looking skin.' },
-  { id: 'Smooth texture', label: 'Smooth texture', description: 'Exfoliation and softer-feeling skin.' },
-  { id: 'Gentle care', label: 'Gentle care', description: 'Mild formulas for everyday use.' },
-  { id: 'Body ritual', label: 'Body ritual', description: 'Bath, body and self-care moments.' },
-  { id: 'Intimate care', label: 'Intimate care', description: 'Discreet everyday feminine care.' },
+  { id: 'Dark spots', label: 'Dark spots', description: 'For the look of dark spots and marks.' },
+  { id: 'Even-looking tone', label: 'Even-looking tone', description: 'For skin that looks uneven in tone.' },
+  { id: 'Daily moisture', label: 'Daily moisture', description: 'For skin that feels dry.' },
 ]
 
 // Product categories belong to the owner: added, renamed, ordered and described in Admin → Website →
@@ -50,7 +46,7 @@ export const shownCategories = (categories, products) => categories
   .map((category) => ({ ...category, items: products.filter((product) => product.category === category.name) }))
   .filter((category) => category.items.length)
 
-export const SHOP_INGREDIENTS = ['Shea butter', 'Cocoa butter', 'Vitamin C', 'Vitamin E', 'Niacinamide', 'Hyaluronic acid', 'Aloe vera', 'Collagen', 'Honey']
+export const SHOP_INGREDIENTS = ['Glutathione', 'Kojic acid']
 
 // ---- Owner-editable lists and layout (Admin → Website → Tags and paths / Layout and menu) ---------------
 // Needs and key ingredients start from the lists above; the owner can add, rename, describe, reorder and
@@ -214,8 +210,8 @@ export const DEFAULT_CONTENT = {
     whyTitle: 'Why Shop',
     whyAccent: 'Lordnoble?',
     whyItems: [],
-    reviewsKicker: 'Real results',
-    reviewsTitle: 'What Our Customers Say',
+    reviewsKicker: '',
+    reviewsTitle: 'What customers say',
     ctaTitle: 'Not sure where to start?',
     ctaText: 'Start with the face serum and cream, or message us and we will help you choose.',
     ctaAction: 'Shop Lordina',
@@ -226,16 +222,16 @@ export const DEFAULT_CONTENT = {
   layout: { sections: HOME_SECTIONS.map(({ key }) => ({ key, show: true })), menu: MENU_ITEMS.map(({ key, label }) => ({ key, label, show: true })) },
   // Headings and short lines on the other pages.
   pages: {
-    shopKicker: 'Shop',
-    shopTitle: 'All',
-    shopAccent: 'Products',
-    reviewsKicker: 'Real results',
-    reviewsTitle: 'What Our',
-    reviewsAccent: 'Customers Say',
-    contactKicker: 'Contact',
-    contactTitle: 'We are',
-    contactAccent: 'here to help',
-    contactText: 'Questions about a product or your order? Get in touch.',
+    shopKicker: '',
+    shopTitle: 'Shop',
+    shopAccent: '',
+    reviewsKicker: '',
+    reviewsTitle: 'Reviews',
+    reviewsAccent: '',
+    contactKicker: '',
+    contactTitle: 'Contact us',
+    contactAccent: '',
+    contactText: 'Ask us about a product or an order.',
     footerText: 'Lordina face and body care by Lordnoble Cosmetics',
   },
   // The About Us page.
@@ -251,7 +247,7 @@ export const DEFAULT_CONTENT = {
     paystackPublicKey: '',
   },
   terms: {
-    updated: '2026-10-05',
+    updated: '2026-11-04',
     sections: [
       { title: 'Who we are', body: 'This website is run by {legalName} ("Lordnoble Cosmetics", "we", "us").\nOur shop is at {address}.\nYou can reach us on {phone}.\nYou can email us at {email}.' },
       { title: 'Using this website', body: 'By using this website or placing an order, you agree to these terms.\nPlease give us true and complete details when you order.' },
@@ -302,6 +298,12 @@ const PRIOR_LORDINA_COPY = [{
   ctaAction: 'Explore the collection',
 }]
 
+const TEMPLATE_PAGES = {
+  shopKicker: 'Shop', shopTitle: 'All', shopAccent: 'Products',
+  reviewsKicker: 'Real results', reviewsTitle: 'What Our', reviewsAccent: 'Customers Say',
+  contactKicker: 'Contact', contactTitle: 'We are', contactAccent: 'here to help', contactText: 'Questions about a product or your order? Get in touch.',
+}
+
 const LEGACY_TOPBAR = ['Nationwide delivery (Ghana)', '100% authentic products', 'Beauty. Wellness. Confidence.']
 const LEGACY_WHY = ['Premium quality', 'Fast and reliable delivery', 'Secure payment', 'Carefully chosen products', 'Loved by our customers']
 const LEGACY_CTA = {
@@ -333,6 +335,12 @@ export function mergeContent(saved) {
   for (const [key, previous] of Object.entries(LEGACY_CTA)) {
     if (next.home[key] === previous) next.home[key] = DEFAULT_CONTENT.home[key]
   }
+  // The template's page headings, refreshed unless the owner changed them.
+  for (const [key, previous] of Object.entries(TEMPLATE_PAGES)) {
+    if (next.pages[key] === previous) next.pages[key] = DEFAULT_CONTENT.pages[key]
+  }
+  if (next.home.reviewsKicker === 'Real results') next.home.reviewsKicker = ''
+  if (next.home.reviewsTitle === 'What Our Customers Say') next.home.reviewsTitle = DEFAULT_CONTENT.home.reviewsTitle
   if (['Beauty and wellness products, delivered', 'The Lordina collection, face and body care'].includes(next.pages.footerText)) next.pages.footerText = DEFAULT_CONTENT.pages.footerText
   if (isPlainObject(saved.tags)) next.tags = cleanTags(saved.tags)
   if (Array.isArray(saved.lines)) next.lines = cleanLines(saved.lines)
