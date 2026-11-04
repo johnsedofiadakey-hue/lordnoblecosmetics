@@ -38,7 +38,8 @@
 
 @media (max-width: 800px) {
   .lordina-hero { grid-template-columns: 1fr; padding: 28px 16px 40px; }
-  .lordina-hero__portrait { grid-row: 1; justify-self: stretch; max-width: none; aspect-ratio: 5 / 6; }
+  /* Capped by screen height so the title and order button still show on the first screen of a tablet. */
+  .lordina-hero__portrait { grid-row: 1; justify-self: stretch; max-width: none; aspect-ratio: auto; height: min(120vw, 56svh); }
   .lordina-hero h1 { font-size: clamp(36px, 10vw, 48px); }
   .lordina-hero__text { font-size: 15px; }
   .lordina-ritual { grid-template-columns: 1fr; }
