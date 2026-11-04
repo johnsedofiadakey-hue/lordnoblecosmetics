@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { addDoc, collection, doc, getDoc, getDocs, runTransaction, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore/lite'
 import { db } from '../../cloud/firebase.js'
-import { checkReview, cleanProduct, cleanReview, HOME_SECTIONS, ICON_CHOICES, MAX_TAGS, groupProducts, mergeCatalog, MAX_CATEGORIES, mergeContent, parseGhs, SHOP_FIELDS } from '../../cloud/site.js'
+import { checkReview, cleanProduct, cleanReview, HOME_SECTIONS, RANGE_GROUPS, ICON_CHOICES, MAX_TAGS, groupProducts, mergeCatalog, MAX_CATEGORIES, mergeContent, parseGhs, SHOP_FIELDS } from '../../cloud/site.js'
 import { checkLogo, checkSitePhoto, uploadLogo, uploadSitePhoto } from '../live/storage.js'
 import { EditorGate } from '../cloud.jsx'
 import { Card, Icon, Pill, Segmented } from '../components/ui.jsx'
@@ -128,7 +128,7 @@ function Editor({ user }) {
       <LogoCard brand={content.brand} onChange={(key, value) => edit('brand', key, value)} />
       <ShopTab shop={content.shop} onChange={(key, value) => edit('shop', key, value)} />
     </> : null}
-    {tab === 'home' ? <HomeTab home={content.home} onChange={(key, value) => edit('home', key, value)} /> : null}
+    {tab === 'home' ? <HomeTab home={content.home} products={products} onChange={(key, value) => edit('home', key, value)} /> : null}
     {tab === 'categories' ? <CategoriesTab categories={content.categories} products={products} onChange={(categories, nextProducts) => {
       setContent({ ...content, categories })
       if (nextProducts) setProducts(nextProducts)
@@ -191,7 +191,7 @@ function IconSelect({ label = 'Icon', value, onChange }) {
 }
 
 // A photo for the website (hero, category card, closing banner, About page), uploaded to Storage.
-function SitePhotoField({ label, hint, kind, value, onChange }) {
+function SitePhotoField({ label, hint, kind, value, onChange, allowRemove = true }) {
   const [busy, setBusy] = useState(false)
   const [note, setNote] = useState('')
   const upload = async (event) => {
@@ -213,7 +213,7 @@ function SitePhotoField({ label, hint, kind, value, onChange }) {
     <div className="site-photo-preview">{value ? <img src={value} alt="" /> : <span className="muted small">No photo yet.</span>}</div>
     <div className="row">
       <label className="btn"><Icon name="plus" size={16} /> {busy ? 'Uploading…' : value ? 'Replace photo' : 'Upload photo'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={upload} disabled={busy} hidden /></label>
-      {value ? <button type="button" className="btn ghost" onClick={() => { onChange(''); setNote('Photo removed. Press “Save changes” to update the website.') }}>Remove</button> : null}
+      {value && allowRemove ? <button type="button" className="btn ghost" onClick={() => { onChange(''); setNote('Photo removed. Press “Save changes” to update the website.') }}>Remove</button> : null}
     </div>
     {note ? <p className={note.startsWith('Photo uploaded') || note.startsWith('Photo removed') ? 'good-text' : 'bad-text'} role="status">{note}</p> : null}
   </div>
@@ -231,11 +231,8 @@ function IconItems({ items, count, onChange }) {
 
 const HOME_GROUPS = [
   { title: 'Hero: words', fields: [
-    ['heroKicker', 'Small label above the headline', 40], ['heroTitle', 'Headline (press Enter for a new line)', 80, 2], ['heroAccent', 'Headline, last line (in gold)', 40],
-    ['heroText', 'Text under the headline', 220, 3], ['heroAction', 'Button', 30], ['heroScript', 'Handwritten words over the photo (one per line; leave empty if the photo has its own)', 80, 3],
-  ] },
-  { title: 'Explore our products (category cards)', fields: [
-    ['categoriesKicker', 'Small label above', 40], ['categoriesTitle', 'Heading', 40], ['categoriesAccent', 'Heading, last word (in gold)', 40],
+    ['heroKicker', 'Small label above the headline', 40], ['heroTitle', 'Headline', 100, 2], ['heroAccent', 'Optional words in gold', 40],
+    ['heroText', 'Text under the headline', 220, 3], ['heroAction', 'Order button (orders the face serum)', 30],
   ] },
   { title: 'Our most loved products', note: 'Tick “Best seller” on a product (Products tab) to show it here.', fields: [
     ['bestKicker', 'Small label above', 40], ['bestTitle', 'Heading', 60],
@@ -248,7 +245,7 @@ const HOME_GROUPS = [
   ] },
 ]
 
-function HomeTab({ home, onChange }) {
+function HomeTab({ home, products, onChange }) {
   const field = ([key, label, max, multiline]) => <TextField key={key} label={label} value={home[key] || ''} onChange={(value) => onChange(key, value)} maxLength={max} multiline={multiline || false} />
   const topbar = Array.from({ length: 3 }, (_, i) => home.topbar?.[i] || '')
   return <div className="stack">
@@ -259,16 +256,28 @@ function HomeTab({ home, onChange }) {
       </div>
     </Card>
     <Card title={HOME_GROUPS[0].title}><div className="grid-2">{HOME_GROUPS[0].fields.map(field)}</div></Card>
-    <Card title="Hero: photo">
+    <Card title="Hero: main portrait">
       <div className="grid-2">
-        <SitePhotoField label="Hero photo" hint="wide, at least 1600 pixels; the person or product on the right" kind="hero" value={home.heroImage} onChange={(value) => onChange('heroImage', value)} />
+        <SitePhotoField label="Hero photo" hint="required portrait image with the face and product visible" kind="hero" value={home.heroImage} onChange={(value) => onChange('heroImage', value)} allowRemove={false} />
         <TextField label="Describe the photo (for screen readers)" value={home.heroImageAlt || ''} onChange={(value) => onChange('heroImageAlt', value)} maxLength={120} />
       </div>
     </Card>
-    <Card title="Hero: three promises under the button">
-      <IconItems items={home.heroBadges} count={3} onChange={(value) => onChange('heroBadges', value)} />
+    <Card title="Face cream scene (under the hero)">
+      <div className="stack">
+        <div className="grid-2">
+          <SitePhotoField label="Second portrait" hint="shown beside the ritual text; removing it hides this scene" kind="hero-second" value={home.heroSecondImage} onChange={(value) => onChange('heroSecondImage', value)} />
+          <TextField label="Describe the photo (for screen readers)" value={home.heroSecondImageAlt || ''} onChange={(value) => onChange('heroSecondImageAlt', value)} maxLength={120} />
+        </div>
+        <div className="grid-2">
+          {field(['heroSecondKicker', 'Small label', 40])}
+          {field(['heroSecondTitle', 'Heading', 100, 2])}
+          {field(['heroSecondText', 'Text', 220, 3])}
+          {field(['heroSecondAction', 'Order button (orders the face cream)', 30])}
+        </div>
+      </div>
     </Card>
-    {HOME_GROUPS.slice(1, 3).map((group) => <Card key={group.title} title={group.title}>
+    <RangeCard home={home} products={products} onChange={onChange} />
+    {HOME_GROUPS.slice(1, 2).map((group) => <Card key={group.title} title={group.title}>
       <div className="stack">{group.note ? <p className="muted small">{group.note}</p> : null}<div className="grid-2">{group.fields.map(field)}</div></div>
     </Card>)}
     <Card title="Why shop with us (the dark band)">
@@ -277,12 +286,46 @@ function HomeTab({ home, onChange }) {
         <IconItems items={home.whyItems} count={5} onChange={(value) => onChange('whyItems', value)} />
       </div>
     </Card>
-    {HOME_GROUPS.slice(3).map((group) => <Card key={group.title} title={group.title}>
+    {HOME_GROUPS.slice(2).map((group) => <Card key={group.title} title={group.title}>
       <div className="stack">{group.note ? <p className="muted small">{group.note}</p> : null}<div className="grid-2">{group.fields.map(field)}</div>
         {group.title === 'Closing banner' ? <SitePhotoField label="Banner photo" hint="shown on the left, e.g. your shopping bag" kind="banner" value={home.ctaImage} onChange={(value) => onChange('ctaImage', value)} /> : null}
       </div>
     </Card>)}
   </div>
+}
+
+// The Lordina range on the home page. Linking an item to a product shows its price and Add to Cart; without a
+// link customers get an "Order on WhatsApp" button with the product name typed for them.
+function RangeCard({ home, products, onChange }) {
+  const range = home.range || []
+  const set = (key, patch) => onChange('range', range.map((item) => (item.key === key ? { ...item, ...patch } : item)))
+  return <Card title="Lordina range">
+    <div className="stack">
+      <div className="grid-2">
+        <TextField label="Heading" value={home.rangeTitle || ''} onChange={(value) => onChange('rangeTitle', value)} maxLength={60} />
+        <TextField label="Text under the heading" value={home.rangeText || ''} onChange={(value) => onChange('rangeText', value)} maxLength={200} multiline />
+      </div>
+      <TextField label="Advice box under the products (leave empty to hide)" value={home.rangeNote || ''} onChange={(value) => onChange('rangeNote', value)} maxLength={240} multiline />
+      <p className="muted small">Keep names and claims the same as the packaging. Link each product to the Products page so its price and Add to Cart show; without a link, customers see “Order on WhatsApp”.</p>
+      {range.map((item) => <div key={item.key} className="stack">
+        <b>{RANGE_GROUPS.find((group) => group.id === item.group)?.label}: {item.name}</b>
+        <label className="check"><input type="checkbox" checked={item.show !== false} onChange={(event) => set(item.key, { show: event.target.checked })} /> Show on the website</label>
+        <div className="grid-2">
+          <TextField label="Name" value={item.name} onChange={(value) => set(item.key, { name: value })} maxLength={80} />
+          <TextField label="Size" hint="e.g. 50mL" value={item.size} onChange={(value) => set(item.key, { size: value })} maxLength={20} />
+          <TextField label="When to use it (small tag)" hint="e.g. Morning" value={item.use} onChange={(value) => set(item.key, { use: value })} maxLength={40} />
+          <label className="field"><span>Product on the Products page</span>
+            <select value={item.productId || ''} onChange={(event) => set(item.key, { productId: event.target.value })}>
+              <option value="">Not linked (order on WhatsApp)</option>
+              {products.map((product) => <option key={product.id} value={product.id}>{product.name}</option>)}
+            </select>
+          </label>
+        </div>
+        <TextField label="One or two lines about it" value={item.text} onChange={(value) => set(item.key, { text: value })} maxLength={200} multiline />
+        <SitePhotoField label="Photo" hint="the product with its box, on a white background" kind={`range-${item.key}`} value={item.image} onChange={(value) => set(item.key, { image: value })} allowRemove={false} />
+      </div>)}
+    </div>
+  </Card>
 }
 
 function AboutTab({ about, onChange }) {

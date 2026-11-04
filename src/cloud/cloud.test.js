@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { canBuy, checkReview, flattenGroups, groupProducts, cleanLayout, cleanLines, cleanTags, checkSiteEdits, cleanCategories, cleanReview, ratingsByProduct, cleanProduct, DEFAULT_CONTENT, fillShopDetails, formatGhs, mergeCatalog, mergeContent, parseGhs, rekeyNewProducts } from './site.js'
+import { canBuy, checkReview, flattenGroups, groupProducts, cleanLayout, cleanLines, cleanTags, checkSiteEdits, cleanCategories, cleanRange, cleanReview, LORDINA_RANGE, ratingsByProduct, cleanProduct, DEFAULT_CONTENT, fillShopDetails, formatGhs, mergeCatalog, mergeContent, parseGhs, rekeyNewProducts } from './site.js'
 import { cartLines, checkDetails, normalizeGhanaPhone, orderRequest, orderTotals, PAYMENT, paystackReference } from './orders.js'
 
 const priced = [
@@ -18,6 +18,60 @@ describe('site content', () => {
     expect(merged.home.heroAccent).toBe('every day.')
     expect(merged.home.heroText).toBe(DEFAULT_CONTENT.home.heroText)
     expect(merged.terms.sections).toEqual([{ title: 'A', body: 'B' }])
+  })
+
+  it('updates only the previous starter hero while keeping owner edits', () => {
+    const merged = mergeContent({ home: {
+      heroTitle: 'Beauty Products\nfor a More',
+      heroImage: '/campaign/hero-model.jpg',
+      heroText: 'My own words',
+      heroBadges: [{ icon: 'leaf', label: 'High quality ingredients' }, { icon: 'shield', label: 'Safe and gentle' }, { icon: 'lotus', label: 'Beauty for every woman' }],
+    } })
+    expect(merged.home.heroTitle).toBe(DEFAULT_CONTENT.home.heroTitle)
+    expect(merged.home.heroImage).toBe(DEFAULT_CONTENT.home.heroImage)
+    expect(merged.home.heroText).toBe('My own words')
+    expect(merged.home.heroBadges).toEqual([])
+  })
+
+  it('refreshes the prior Lordina campaign copy without replacing owner words', () => {
+    const merged = mergeContent({ home: {
+      heroTitle: 'Luxury care for a naturally radiant glow.',
+      heroText: 'Lordina Face Serum · 50mL',
+      heroSecondTitle: 'A moment of care, made yours.',
+      heroSecondText: 'A personal line from the owner.',
+    } })
+    expect(merged.home.heroTitle).toBe(DEFAULT_CONTENT.home.heroTitle)
+    expect(merged.home.heroText).toBe(DEFAULT_CONTENT.home.heroText)
+    expect(merged.home.heroSecondTitle).toBe(DEFAULT_CONTENT.home.heroSecondTitle)
+    expect(merged.home.heroSecondText).toBe('A personal line from the owner.')
+  })
+
+  it('retires the old generic home claims while preserving owner-written copy', () => {
+    const merged = mergeContent({ home: {
+      topbar: ['Nationwide delivery (Ghana)', '100% authentic products', 'Beauty. Wellness. Confidence.'],
+      whyItems: [{ icon: 'gem', label: 'Premium quality' }, { icon: 'truck', label: 'Fast and reliable delivery' }, { icon: 'shield', label: 'Secure payment' }, { icon: 'leaf', label: 'Carefully chosen products' }, { icon: 'heart', label: 'Loved by our customers' }],
+      ctaTitle: 'Ready to Glow?',
+      ctaText: 'Shop your favourite beauty products today and enjoy fast delivery anywhere in Ghana.',
+      ctaAction: 'Shop Now',
+    }, pages: { footerText: 'Beauty and wellness products, delivered' } })
+    expect(merged.home.topbar).toEqual([])
+    expect(merged.home.whyItems).toEqual([])
+    expect(merged.home.ctaTitle).toBe(DEFAULT_CONTENT.home.ctaTitle)
+    expect(merged.pages.footerText).toBe(DEFAULT_CONTENT.pages.footerText)
+    const custom = mergeContent({ home: { topbar: ['My own announcement'], whyItems: [{ icon: 'leaf', label: 'My own promise' }], ctaTitle: 'My own invitation' }, pages: { footerText: 'Made with care' } })
+    expect(custom.home.topbar).toEqual(['My own announcement'])
+    expect(custom.home.whyItems).toEqual([{ icon: 'leaf', label: 'My own promise' }])
+    expect(custom.home.ctaTitle).toBe('My own invitation')
+    expect(custom.pages.footerText).toBe('Made with care')
+  })
+
+  it('keeps the five Lordina products in order and only takes the owner edits it knows', () => {
+    const range = cleanRange([{ key: 'night', name: '  Night Lotion  ', productId: 'night-lotion', show: false, image: '' }, { key: 'bogus', name: 'Not ours' }])
+    expect(range.map((item) => item.key)).toEqual(LORDINA_RANGE.map((item) => item.key))
+    const night = range.find((item) => item.key === 'night')
+    expect(night).toMatchObject({ name: 'Night Lotion', productId: 'night-lotion', show: false, image: LORDINA_RANGE[3].image, group: 'body' })
+    expect(cleanRange(null)[0]).toEqual(LORDINA_RANGE[0])
+    expect(mergeContent({ home: { heroTitle: 'Before the day asks anything of you.' } }).home.heroTitle).toBe(DEFAULT_CONTENT.home.heroTitle)
   })
 
   it('fills shop details into text and leaves out any line whose detail is still empty (no placeholders)', () => {

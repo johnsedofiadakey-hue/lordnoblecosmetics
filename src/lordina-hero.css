@@ -1,0 +1,50 @@
+.home .site-top--dark::after { background: #1a1310; box-shadow: 0 1px 0 rgb(255 248 237 / .14); }
+.home .site-top--dark.is-scrolled::after { box-shadow: 0 10px 26px -16px rgb(0 0 0 / .65); }
+.site-top--dark .main-nav, .site-top--dark .header-actions { color: #fff8ed; }
+.site-top--dark .main-nav a:hover, .site-top--dark .icon-btn:hover { color: #e3b896; }
+.site-top--dark .main-nav > a[aria-current="page"]::after { background: #e3b896; }
+.site-top--dark .nav-drop__menu { color: var(--wine-deep); }
+.site-top--dark .nav-drop__menu a:hover { color: var(--wine); }
+.site-top--dark .mobile-nav { background: #1a1310; }
+.site-top--dark .mobile-nav a { color: #fff8ed; border-bottom-color: rgb(255 248 237 / .16); }
+
+/* Hero: the serum, its photo and a way to order. */
+.lordina-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: clamp(32px, 5vw, 80px); padding: clamp(36px, 5vw, 72px) max(24px, calc((100vw - 1240px) / 2)); background: #1a1310; color: #fff8ed; }
+.lordina-hero__eyebrow { color: #e3b896; font: 600 12px/1.4 var(--sans); letter-spacing: .08em; }
+.lordina-hero h1 { max-width: 520px; margin: 14px 0 16px; color: #fff8ed; font: 500 clamp(40px, 4.6vw, 64px)/1.02 var(--serif); letter-spacing: -.015em; }
+.lordina-hero__accent { color: #e3b896; }
+.lordina-hero__text { max-width: 430px; color: #eadbd0; font-size: 16px; line-height: 1.6; }
+.lordina-hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; margin-top: 28px; }
+.lordina-hero__button { display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 22px; border-radius: 999px; background: var(--gold-grad); color: #1a1310; font-size: 14px; font-weight: 600; transition: filter .2s; }
+.lordina-hero__button:hover { filter: brightness(1.08); }
+.lordina-hero__link { padding-bottom: 3px; border-bottom: 1px solid #e3b896; color: #fff8ed; font-size: 14px; }
+.lordina-hero__link:hover { color: #e3b896; }
+.lordina-hero__portrait { justify-self: end; width: 100%; max-width: 520px; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 6px; background: #2a1f1a; }
+.lordina-hero__portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
+
+/* The face cream, next to its photo. */
+.lordina-ritual { display: grid; grid-template-columns: 1fr 1fr; background: #f6f0e8; color: #261e1b; }
+.lordina-ritual__photo { height: clamp(380px, 38vw, 520px); overflow: hidden; background: #ead7cb; }
+.lordina-ritual__photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 36%; }
+.lordina-ritual__copy { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 48px clamp(28px, 6vw, 96px); }
+.lordina-ritual__copy .lordina-hero__eyebrow { color: #8f4f30; }
+.lordina-ritual h2 { max-width: 460px; margin: 12px 0 16px; font: 500 clamp(34px, 3.6vw, 50px)/1.05 var(--serif); letter-spacing: -.01em; }
+.lordina-ritual__copy > p:not(.lordina-hero__eyebrow) { max-width: 400px; color: #5a514a; font-size: 16px; line-height: 1.65; }
+.lordina-ritual__link { display: inline-flex; align-items: center; gap: 10px; margin-top: 24px; padding-bottom: 4px; border-bottom: 1px solid #8f4f30; color: #261e1b; font-size: 14px; font-weight: 600; }
+.lordina-ritual__link:hover { color: #8f4f30; }
+
+@media (max-width: 800px) {
+  .lordina-hero { grid-template-columns: 1fr; padding: 28px 16px 40px; }
+  .lordina-hero__portrait { grid-row: 1; justify-self: stretch; max-width: none; aspect-ratio: 5 / 6; }
+  .lordina-hero h1 { font-size: clamp(36px, 10vw, 48px); }
+  .lordina-hero__text { font-size: 15px; }
+  .lordina-ritual { grid-template-columns: 1fr; }
+  .lordina-ritual__photo { height: 360px; }
+  .lordina-ritual__copy { padding: 32px 16px 44px; }
+}
+
+@media (max-width: 520px) {
+  .site-top--dark .site-header { gap: 8px; }
+  .site-top--dark .brand-logo { height: 42px; max-width: 175px; }
+  .site-top--dark .header-actions { gap: 8px; }
+}

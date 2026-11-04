@@ -18,7 +18,7 @@ function PageHero({ kicker, title, accent, children }) {
 
 export function AboutPage() {
   const { content } = useSite()
-  const { about, shop } = content
+  const { about } = content
   const image = pictureLink(about.image)
   const paragraphs = String(about.text || '').split(/\n\s*\n/).map((part) => part.trim()).filter(Boolean)
   useEffect(() => { document.title = 'About Us — Lordnoble Cosmetics' }, [])
@@ -29,8 +29,8 @@ export function AboutPage() {
       {image ? <div className="about__photo"><img src={image} alt={about.imageAlt || ''} /></div> : null}
       <div className="about__copy">
         {paragraphs.length ? paragraphs.map((part, i) => <p key={i}>{part}</p>)
-          : <p>Lordnoble Cosmetics brings beauty, body care and wellness products to customers {shop.deliveryAreas ? `in ${shop.deliveryAreas}` : 'across Ghana'}.</p>}
-        <a className="btn-wine" href="/shop">Shop our products <ArrowRight {...ICON} /></a>
+          : <p>Discover the Lordina collection of face and body care.</p>}
+        <a className="btn-wine" href="/shop">Shop Lordina <ArrowRight {...ICON} /></a>
       </div>
     </section>
     <SiteFooter />

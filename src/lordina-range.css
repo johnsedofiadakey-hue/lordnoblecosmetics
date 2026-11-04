@@ -1,0 +1,81 @@
+/* The Lordina range: every product in a white card with its photo, what it is for, and a price or a way to order. */
+.lordina-range { padding: clamp(56px, 7vw, 96px) max(24px, calc((100vw - 1240px) / 2)) 72px; background: #f8f3ee; color: #241d19; scroll-margin-top: 110px; }
+.lordina-range__intro { max-width: 640px; margin-bottom: 40px; }
+.lordina-range h2 { font: 500 clamp(36px, 4vw, 52px)/1.05 var(--serif); letter-spacing: -.01em; }
+.lordina-range__intro p { margin-top: 12px; color: #5f5750; font-size: 16px; line-height: 1.6; }
+.lordina-range__group + .lordina-range__group { margin-top: 48px; }
+.lordina-range__group h3 { margin-bottom: 16px; color: #8f4f30; font: 600 14px/1.4 var(--sans); }
+.lordina-range__grid { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 20px; }
+.lordina-range__grid[data-count="2"] { --cols: 2; max-width: 820px; }
+.lordina-range__grid[data-count="1"] { --cols: 1; max-width: 400px; }
+.lordina-range__item { display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e8ddd3; border-radius: 8px; background: #fff; }
+.lordina-range__image { aspect-ratio: 1; padding: 12px; background: #fff; }
+.lordina-range__image img { width: 100%; height: 100%; object-fit: contain; }
+.lordina-range__words { flex: 1; padding: 4px 20px 0; }
+.lordina-range__use { display: inline-block; margin-bottom: 10px; padding: 4px 10px; border-radius: 999px; background: #f6e9df; color: #7a4428; font-size: 12px; font-weight: 600; }
+.lordina-range__words h4 { margin: 0; font: 500 24px/1.15 var(--serif); }
+.lordina-range__size { display: block; margin-top: 4px; color: #776d64; font-size: 13px; }
+.lordina-range__words p { margin-top: 10px; color: #5a514a; font-size: 14px; line-height: 1.55; }
+.lordina-range__buy { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; padding: 14px 20px 18px; border-top: 1px solid #f0e7df; }
+.lordina-range__buy b { font-size: 16px; }
+.lordina-range__buy a, .lordina-range__buy button { display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border: 0; border-radius: 999px; background: #1a1310; color: #fff8ed; font: 600 13px/1 var(--sans); cursor: pointer; }
+.lordina-range__buy a:only-child { width: 100%; justify-content: center; }
+.lordina-range__buy a:hover, .lordina-range__buy button:hover { background: #3a2b24; }
+.lordina-range__note { max-width: 640px; margin-top: 36px; padding: 14px 18px; border-left: 3px solid #c47f58; background: #fff; color: #4a3b33; font-size: 14px; line-height: 1.55; }
+.shop .lordina-range--compact { padding-top: 40px; }
+
+@media (max-width: 900px) and (min-width: 521px) {
+  .lordina-range__grid { --cols: 2; }
+}
+
+@media (max-width: 520px) {
+  .lordina-range { padding: 44px 16px 52px; }
+  .lordina-range__grid, .lordina-range__grid[data-count] { --cols: 2; max-width: none; gap: 12px; }
+  .lordina-range__image { padding: 6px; }
+  .lordina-range__words { padding: 2px 12px 0; }
+  .lordina-range__use { margin-bottom: 8px; font-size: 11px; }
+  .lordina-range__words h4 { font-size: 18px; }
+  .lordina-range__words p { font-size: 13px; }
+  .lordina-range__buy { flex-direction: column; align-items: stretch; margin-top: 12px; padding: 12px; }
+  .lordina-range__buy a, .lordina-range__buy button { justify-content: center; padding: 0 10px; font-size: 12px; }
+}
+
+/* Keep owner-added catalogue, proof and closing content in the same visual language. */
+.home .loved { padding-top: 80px; padding-bottom: 80px; }
+.home .loved .sec-head h2 { font-weight: 300; font-size: clamp(46px, 5vw, 68px); }
+.home .product-card, .shop .product-card { border-color: #e4dcd3; border-radius: 0; box-shadow: none; }
+.home .product-card__art, .shop .product-card__art { background: #fff; }
+.home .product-card__copy, .shop .product-card__copy { padding: 17px 15px 15px; }
+.home .product-card__name, .shop .product-card__name { font: 500 26px/1.05 var(--serif); }
+.home .product-card__add, .shop .product-card__add { border-radius: 0; }
+.info-page .page-hero, .shop:not(.shop--preview) .page-hero { background: #f6f0e8; }
+.info-page .page-hero h1, .shop:not(.shop--preview) .page-hero h1 { font-weight: 300; font-size: clamp(50px, 6vw, 76px); }
+.info-page .page-hero .gold, .shop:not(.shop--preview) .page-hero .gold { background: none; color: #8a673f; }
+.home .why { margin: 0; padding-top: 55px; padding-bottom: 55px; background: #1c1217; clip-path: none; }
+.home .why h2 { background: none; color: #f8f1e8; font-weight: 300; font-size: clamp(42px, 4.5vw, 64px); }
+.home .why ul { gap: 0 20px; }
+.home .why li { display: flex; align-items: baseline; justify-content: flex-start; gap: 12px; padding: 15px 0; border: 0; border-bottom: 1px solid rgb(255 248 237 / .22); text-align: left; }
+.home .why li span { display: none; }
+.home .review-card { border-color: #e4dcd3; border-radius: 0; box-shadow: none; }
+.home .review-card__avatar { width: 42px; height: 42px; border: 1px solid #cfc6bb; border-radius: 50%; background: none; color: #6b5140; font-size: 22px; }
+.home .cta { min-height: 300px; grid-template-columns: minmax(220px, 30%) 1fr auto; gap: 44px; padding-top: 25px; padding-bottom: 25px; background: #ebe3d9; }
+.home .cta__ribbon { display: none; }
+.home .cta__art { align-self: stretch; height: 250px; }
+.home .cta__art img { object-fit: cover; object-position: center; }
+.home .cta h2 { font-weight: 300; font-size: clamp(44px, 5vw, 68px); }
+.home .cta .btn-gold { min-height: 46px; padding: 0 24px; border-radius: 0; background: #1c1217; box-shadow: none; color: #fff8ed; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+
+@media (max-width: 900px) {
+  .home .why ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home .cta { grid-template-columns: 220px 1fr; justify-items: start; text-align: left; }
+  .home .cta .btn-gold { grid-column: 2; }
+  .home .cta__art { order: 0; grid-row: 1 / span 2; }
+}
+@media (max-width: 600px) {
+  .home .why { padding: 45px 24px; text-align: left; }
+  .home .why h2 { padding: 0 0 20px; }
+  .home .why ul { grid-template-columns: 1fr; }
+  .home .cta { grid-template-columns: 1fr; gap: 18px; padding: 24px; }
+  .home .cta__art { grid-row: auto; width: 100%; height: 220px; }
+  .home .cta .btn-gold { grid-column: auto; }
+}

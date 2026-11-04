@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Search, X } from 'lucide-react'
 import { ContactLinks, ICON, ProductCard, SiteFooter, SiteHeader, useMenuCategories, useSite } from './storefront'
 import { LINES } from './cloud/site.js'
+import LordinaCollection from './LordinaCollection'
 
 // All products, with the owner's categories along the top, search, and shop path / need / ingredient filters.
 // Every filter lives in the address so a filtered page can be shared.
@@ -42,7 +43,7 @@ export default function ShopPage() {
   const lines = content.lines.filter((line) => count((product) => product.line === line.id))
   const { pages } = content
 
-  useEffect(() => { document.title = window.location.pathname.startsWith('/checkout') ? 'Checkout — Lordnoble Cosmetics' : 'Shop — Lordnoble Cosmetics' }, [])
+  useEffect(() => { document.title = window.location.pathname.startsWith('/checkout') ? 'Checkout — Lordnoble Cosmetics' : products.length ? 'Shop — Lordnoble Cosmetics' : 'Shop Lordina — Lordnoble Cosmetics' }, [products.length])
   // The header's search icon links to /shop#search: put the cursor straight in the search box.
   useEffect(() => {
     if (window.location.hash !== '#search') return
@@ -70,6 +71,12 @@ export default function ShopPage() {
   const heading = filters.best ? 'Best Sellers' : filters.category || content.lines.find((line) => line.id === filters.line)?.label || filters.need || filters.ingredient || ''
   const chip = (key, value, label = value) => <button key={value} className={filters[key] === value ? 'active' : ''} aria-pressed={filters[key] === value} onClick={() => toggle(key, value)}>{label}</button>
   const anyFilter = Object.values(filters).some(Boolean)
+
+  if (loaded && !products.length) return <main className="shop shop--preview">
+    <SiteHeader />
+    <LordinaCollection products={products} compact />
+    <SiteFooter />
+  </main>
 
   return <main className="shop">
     <SiteHeader />
@@ -103,7 +110,7 @@ export default function ShopPage() {
       {visible.length ? <div className="product-grid">{visible.map((product) => <ProductCard key={product.id} product={product} onAdded={setJustAdded} />)}</div>
         : !loaded ? <p className="shop-empty">Loading the products…</p>
           : products.length ? <div className="shop-empty"><p>Nothing matches just yet.</p><button className="btn-wine" onClick={() => choose(EMPTY)}>Show all products</button></div>
-            : <div className="shop-empty"><p>Our shelves are being stocked. Products appear here as soon as they are ready to order.</p><div className="shop-empty__contact"><ContactLinks shop={content.shop} /></div></div>}
+            : <div className="shop-empty"><p>Nothing is in the online shop yet. Message us to order.</p><div className="shop-empty__contact"><ContactLinks shop={content.shop} /></div></div>}
     </section>
 
     <div className={`added-toast ${justAdded ? 'show' : ''}`} role="status" aria-live="polite">

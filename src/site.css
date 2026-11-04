@@ -72,6 +72,7 @@ h1, h2, h3, p { margin: 0; }
 
 .site-header { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 24px; width: var(--wrap); min-height: 86px; margin: auto; }
 .site-top::after { content: ''; position: absolute; inset: 38px 0 0; z-index: -1; background: rgb(255 250 246 / .97); box-shadow: 0 1px 0 var(--line); transition: box-shadow .2s; }
+.site-top--no-topbar::after { top: 0; }
 .site-top.is-scrolled::after { box-shadow: 0 8px 24px -18px rgb(18 13 11 / .4); }
 .brand { display: inline-flex; flex: none; }
 .brand-logo { display: block; width: auto; height: 62px; max-width: 280px; object-fit: contain; }
@@ -295,6 +296,7 @@ a.contact-card:hover { border-color: var(--wine); }
 /* ---- Footer -------------------------------------------------------------------------------------- */
 .site-footer { margin-top: 0; padding: 54px max(24px, calc((100% - 1240px) / 2)) 26px; background: var(--wine-deep); color: #f3e6de; font-size: 14px; }
 .footer-top { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1.2fr; gap: 40px; }
+.site-footer--preview .footer-top { grid-template-columns: 1.4fr 1fr; }
 .footer-brand p { max-width: 280px; margin-top: 16px; color: #e3d1c5; }
 .footer-social { display: flex; gap: 14px; margin-top: 18px; font-size: 18px; }
 .footer-social a:hover, .footer-col a:hover { color: var(--gold-light); }

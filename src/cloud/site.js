@@ -90,7 +90,7 @@ export const lineLabel = (lines, id) => lines.find((line) => line.id === id)?.la
 
 // Home page sections (after the hero) and menu links, in the owner's order, each shown or hidden.
 export const HOME_SECTIONS = [
-  { key: 'explore', label: 'Explore our products (category cards)' },
+  { key: 'explore', label: 'The Lordina range' },
   { key: 'loved', label: 'Our most loved products' },
   { key: 'why', label: 'Why shop with us' },
   { key: 'reviews', label: 'Customer reviews' },
@@ -139,7 +139,40 @@ export const SHOP_FIELDS = [
   { key: 'facebook', label: 'Facebook link' },
 ]
 
-export const HERO_IMAGE = '/campaign/hero-model.jpg'
+export const HERO_IMAGE = '/campaign/lordina-serum-portrait.webp'
+
+// The Lordina range on the home page (Admin → Website → Home page → Lordina range). Names, sizes and claims follow
+// the packaging. An item linked to a catalogue product shows its price and Add to Cart; otherwise an order button.
+export const RANGE_GROUPS = [
+  { id: 'face', label: 'For your face' },
+  { id: 'body', label: 'For your body' },
+]
+export const LORDINA_RANGE = [
+  { key: 'serum', group: 'face', name: 'Lordina Whitening Face Serum', size: '50mL', use: 'Before the face cream', text: 'A few drops on clean skin. For dark spots and uneven tone.', image: '/campaign/lordina-face-serum.webp', productId: '' },
+  { key: 'cream', group: 'face', name: 'Lordina Whitening Face Cream', size: '50g', use: 'After the serum', text: 'Keeps your face moisturised while it works on dark spots.', image: '/campaign/lordina-face-cream.webp', productId: '' },
+  { key: 'day', group: 'body', name: 'Lordina Whitening Body Lotion, Day', size: '150mL', use: 'Morning', text: 'The morning lotion. Wear sunscreen over it when you are out in the sun.', image: '/campaign/lordina-day-lotion.webp', productId: '' },
+  { key: 'night', group: 'body', name: 'Lordina Whitening Body Lotion, Night', size: '150mL', use: 'Evening', text: 'The evening lotion, for after your bath.', image: '/campaign/lordina-night-lotion.webp', productId: '' },
+  { key: 'oil', group: 'body', name: 'Lordina Whitening Body Oil', size: '120mL', use: 'After bathing', text: 'Rub into damp skin to lock in moisture.', image: '/campaign/lordina-body-oil.webp', productId: '' },
+]
+
+// The owner's edits to each range item, matched by key; unknown keys are dropped and the photo order stays.
+export function cleanRange(saved) {
+  return LORDINA_RANGE.map((item) => {
+    const own = Array.isArray(saved) ? saved.find((entry) => entry?.key === item.key) : null
+    if (!own) return { ...item }
+    const words = (key, max) => String(own[key] ?? item[key]).trim().slice(0, max)
+    return {
+      ...item,
+      name: words('name', 80) || item.name,
+      size: words('size', 20),
+      use: words('use', 40),
+      text: words('text', 200),
+      image: picture(own.image) || item.image,
+      productId: String(own.productId ?? '').trim().slice(0, 80),
+      show: own.show !== false,
+    }
+  })
+}
 
 export const DEFAULT_CONTENT = {
   shop: Object.fromEntries(SHOP_FIELDS.map((field) => [field.key, ''])),
@@ -153,20 +186,26 @@ export const DEFAULT_CONTENT = {
   categories: DEFAULT_CATEGORIES,
   // The home page (the client's reference design). Every word and picture is editable in Admin → Website.
   home: {
-    topbar: ['Nationwide delivery (Ghana)', '100% authentic products', 'Beauty. Wellness. Confidence.'],
-    heroKicker: 'Premium beauty products',
-    heroTitle: 'Beauty Products\nfor a More',
-    heroAccent: 'Confident You',
-    heroText: 'Care for your body. Enhance your beauty.\nFeel good every day with Lordnoble.',
-    heroAction: 'Shop Now',
-    heroImage: '/campaign/hero-model.jpg',
-    heroImageAlt: 'Smiling woman with a towel wrapped in her hair after her skin care routine',
-    heroScript: 'Beauty\nWellness\nConfidence',
-    heroBadges: [
-      { icon: 'leaf', label: 'High quality ingredients' },
-      { icon: 'shield', label: 'Safe and gentle' },
-      { icon: 'lotus', label: 'Beauty for every woman' },
-    ],
+    topbar: [],
+    heroKicker: 'New from Lordnoble Cosmetics',
+    heroTitle: 'Lordina Whitening Face Serum',
+    heroAccent: '',
+    heroText: 'For dark spots and uneven skin tone. Made with glutathione and kojic acid. 50mL bottle.',
+    heroAction: 'Order the serum',
+    heroImage: '/campaign/lordina-serum-portrait.webp',
+    heroImageAlt: 'Woman holding a bottle of Lordina Whitening Face Serum',
+    heroScript: '',
+    heroBadges: [],
+    heroSecondImage: '/campaign/lordina-cream-moment.webp',
+    heroSecondImageAlt: 'Woman applying Lordina Whitening Face Cream from the jar',
+    heroSecondKicker: 'Use it with the serum',
+    heroSecondTitle: 'Lordina Whitening Face Cream',
+    heroSecondText: 'Smooth it over your face after the serum to keep your skin moisturised. Also made with glutathione and kojic acid. 50g jar.',
+    heroSecondAction: 'Order the face cream',
+    rangeTitle: 'The Lordina range',
+    rangeText: 'Five products, all made with glutathione and kojic acid. Two for your face, three for your body.',
+    rangeNote: 'New to lightening products? Try a little on your inner arm for a day first, and wear sunscreen when you are out in the sun.',
+    range: LORDINA_RANGE.map((item) => ({ ...item })),
     categoriesKicker: 'Shop by category',
     categoriesTitle: 'Explore Our',
     categoriesAccent: 'Products',
@@ -174,18 +213,12 @@ export const DEFAULT_CONTENT = {
     bestTitle: 'Our Most Loved Products',
     whyTitle: 'Why Shop',
     whyAccent: 'Lordnoble?',
-    whyItems: [
-      { icon: 'gem', label: 'Premium quality' },
-      { icon: 'truck', label: 'Fast and reliable delivery' },
-      { icon: 'shield', label: 'Secure payment' },
-      { icon: 'leaf', label: 'Carefully chosen products' },
-      { icon: 'heart', label: 'Loved by our customers' },
-    ],
+    whyItems: [],
     reviewsKicker: 'Real results',
     reviewsTitle: 'What Our Customers Say',
-    ctaTitle: 'Ready to Glow?',
-    ctaText: 'Shop your favourite beauty products today and enjoy fast delivery anywhere in Ghana.',
-    ctaAction: 'Shop Now',
+    ctaTitle: 'Not sure where to start?',
+    ctaText: 'Start with the face serum and cream, or message us and we will help you choose.',
+    ctaAction: 'Shop Lordina',
     ctaImage: '',
   },
   tags: { needs: SHOP_NEEDS.map(({ label, description }) => ({ label, description })), ingredients: [...SHOP_INGREDIENTS] },
@@ -203,7 +236,7 @@ export const DEFAULT_CONTENT = {
     contactTitle: 'We are',
     contactAccent: 'here to help',
     contactText: 'Questions about a product or your order? Get in touch.',
-    footerText: 'Beauty and wellness products, delivered',
+    footerText: 'Lordina face and body care by Lordnoble Cosmetics',
   },
   // The About Us page.
   about: {
@@ -236,12 +269,71 @@ export const DEFAULT_CONTENT = {
 
 const isPlainObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value)
 
+const LEGACY_HERO = {
+  heroKicker: 'Premium beauty products',
+  heroTitle: 'Beauty Products\nfor a More',
+  heroAccent: 'Confident You',
+  heroText: 'Care for your body. Enhance your beauty.\nFeel good every day with Lordnoble.',
+  heroAction: 'Shop Now',
+  heroImage: '/campaign/hero-model.jpg',
+  heroImageAlt: 'Smiling woman with a towel wrapped in her hair after her skin care routine',
+  heroScript: 'Beauty\nWellness\nConfidence',
+}
+
+// Earlier drafts of the Lordina copy, refreshed to the current defaults unless the owner changed them.
+const PRIOR_LORDINA_COPY = [{
+  heroTitle: 'Luxury care for a naturally radiant glow.',
+  heroText: 'Lordina Face Serum · 50mL',
+  heroAction: 'Explore the collection',
+  heroSecondTitle: 'A moment of care, made yours.',
+  heroSecondText: 'The Lordina collection brings face and body care into the moments you set aside for yourself.',
+  heroSecondAction: 'Explore Lordina',
+}, {
+  heroKicker: 'The Lordina collection / 01',
+  heroTitle: 'Before the day asks anything of you.',
+  heroText: 'Lordina Face Serum · 50mL. Lightweight, fast-absorbing hydration for a naturally radiant look.',
+  heroAction: 'Discover Lordina',
+  heroSecondKicker: '02 / The ritual',
+  heroSecondTitle: 'When the day slows down.',
+  heroSecondText: 'Lordina Face Cream · 50g. Rich yet lightweight moisture for soft, smooth skin.',
+  heroSecondAction: 'View the collection',
+  ctaTitle: 'Make room for care.',
+  ctaText: 'Explore the face and body care in the Lordina collection.',
+  ctaAction: 'Explore the collection',
+}]
+
+const LEGACY_TOPBAR = ['Nationwide delivery (Ghana)', '100% authentic products', 'Beauty. Wellness. Confidence.']
+const LEGACY_WHY = ['Premium quality', 'Fast and reliable delivery', 'Secure payment', 'Carefully chosen products', 'Loved by our customers']
+const LEGACY_CTA = {
+  ctaTitle: 'Ready to Glow?',
+  ctaText: 'Shop your favourite beauty products today and enjoy fast delivery anywhere in Ghana.',
+  ctaAction: 'Shop Now',
+}
+
 export function mergeContent(saved) {
   const next = structuredClone(DEFAULT_CONTENT)
   if (!isPlainObject(saved)) return next
   for (const part of ['shop', 'brand', 'home', 'about', 'pages', 'checkout']) {
     if (isPlainObject(saved[part])) Object.assign(next[part], saved[part])
   }
+  for (const [key, previous] of Object.entries(LEGACY_HERO)) {
+    if (next.home[key] === previous) next.home[key] = DEFAULT_CONTENT.home[key]
+  }
+  for (const draft of PRIOR_LORDINA_COPY) {
+    for (const [key, previous] of Object.entries(draft)) {
+      if (next.home[key] === previous) next.home[key] = DEFAULT_CONTENT.home[key]
+    }
+  }
+  next.home.range = cleanRange(next.home.range)
+  if (next.home.heroBadges?.map((badge) => badge.label).join('|') === 'High quality ingredients|Safe and gentle|Beauty for every woman') {
+    next.home.heroBadges = []
+  }
+  if (Array.isArray(next.home.topbar) && next.home.topbar.join('|') === LEGACY_TOPBAR.join('|')) next.home.topbar = []
+  if (Array.isArray(next.home.whyItems) && next.home.whyItems.map((item) => item?.label).join('|') === LEGACY_WHY.join('|')) next.home.whyItems = []
+  for (const [key, previous] of Object.entries(LEGACY_CTA)) {
+    if (next.home[key] === previous) next.home[key] = DEFAULT_CONTENT.home[key]
+  }
+  if (['Beauty and wellness products, delivered', 'The Lordina collection, face and body care'].includes(next.pages.footerText)) next.pages.footerText = DEFAULT_CONTENT.pages.footerText
   if (isPlainObject(saved.tags)) next.tags = cleanTags(saved.tags)
   if (Array.isArray(saved.lines)) next.lines = cleanLines(saved.lines)
   if (isPlainObject(saved.layout)) next.layout = cleanLayout(saved.layout)

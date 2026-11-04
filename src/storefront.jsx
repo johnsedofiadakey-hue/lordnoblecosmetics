@@ -234,6 +234,7 @@ function TopBar() {
   const { shop, home } = content
   const messages = (home.topbar || []).map((text, i) => ({ text: String(text || '').trim(), Icon: TOPBAR_ICONS[i % TOPBAR_ICONS.length] })).filter((item) => item.text)
   const socials = ['instagram', 'tiktok', 'facebook'].map((name) => ({ name, href: webLink(shop[name]) })).filter((item) => item.href)
+  if (!messages.length && !socials.length) return null
   return <div className="topbar">
     <div className="topbar__inner">
       <ul className="topbar__messages">{messages.map(({ text, Icon }) => <li key={text}><Icon {...ICON} /> {text}</li>)}</ul>
@@ -251,8 +252,8 @@ export function useMenuCategories() {
   return useMemo(() => content.categories.filter((category) => category.image || products.some((product) => product.category === category.name)), [content.categories, products])
 }
 
-export function SiteHeader() {
-  const { count, openCart, content } = useSite()
+export function SiteHeader({ dark = false }) {
+  const { count, openCart, content, groups: products, reviews } = useSite()
   const categories = useMenuCategories()
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -264,9 +265,10 @@ export function SiteHeader() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
   const close = () => setMenuOpen(false)
+  const hasContact = Boolean(content.shop.phone || content.shop.whatsapp || content.shop.email || content.shop.address || content.shop.hours)
   const shopLinks = [
     { href: '/shop', label: 'All products' },
-    { href: '/shop?best=1', label: 'Best sellers' },
+    ...(products.some((product) => product.bestSeller) ? [{ href: '/shop?best=1', label: 'Best sellers' }] : []),
     ...content.lines.map((line) => ({ href: `/shop?line=${encodeURIComponent(line.id)}`, label: line.label })),
   ]
   const categoryLinks = categories.length ? categories.map((category) => ({ href: `/shop?category=${encodeURIComponent(category.name)}`, label: category.name })) : [{ href: '/shop', label: 'All products' }]
@@ -277,24 +279,29 @@ export function SiteHeader() {
   </div>
   // The menu is the owner's: order, names and which links show (Admin → Website → Layout and menu).
   const HREF = { home: '/', shop: '/shop', about: '/about', reviews: '/reviews', contact: '/contact' }
-  const items = content.layout.menu.filter((item) => item.show)
+  const items = content.layout.menu.filter((item) => item.show &&
+    (item.key !== 'categories' || categories.length) &&
+    (item.key !== 'about' || content.about.text || content.about.image) &&
+    (item.key !== 'reviews' || reviews.length) &&
+    (item.key !== 'contact' || hasContact))
   const desktop = (item) => {
-    if (item.key === 'shop') return <span key={item.key}>{dropdown(item.label, '/shop', shopLinks)}</span>
+    if (item.key === 'shop') return products.length ? <span key={item.key}>{dropdown(item.label, '/shop', shopLinks)}</span> : <a key={item.key} href="/shop" aria-current={current('/shop')}>{item.label}</a>
     if (item.key === 'categories') return <span key={item.key}>{dropdown(item.label, '/shop', categoryLinks)}</span>
     return <a key={item.key} href={HREF[item.key]} aria-current={current(HREF[item.key])}>{item.label}</a>
   }
   const mobile = (item) => item.key === 'categories'
     ? categoryLinks.map((link) => <a key={`c-${link.label}`} className="sub" href={link.href} onClick={close}>{link.label}</a>)
     : <a key={item.key} href={HREF[item.key] || '/shop'} onClick={close}>{item.label}</a>
-  return <div className={`site-top ${scrolled ? 'is-scrolled' : ''}`}>
+  const hasTopbar = (content.home.topbar || []).some((message) => String(message || '').trim()) || ['instagram', 'tiktok', 'facebook'].some((name) => webLink(content.shop[name]))
+  return <div className={`site-top ${dark ? 'site-top--dark' : ''} ${!hasTopbar ? 'site-top--no-topbar' : ''} ${scrolled ? 'is-scrolled' : ''}`}>
     <TopBar />
     <header className="site-header">
-      <a href="/" className="brand" aria-label="Lordnoble Cosmetics home"><Logo /></a>
+      <a href="/" className="brand" aria-label="Lordnoble Cosmetics home"><Logo onDark={dark} /></a>
       <nav className="main-nav" aria-label="Main">{items.map(desktop)}</nav>
       <div className="header-actions">
-        <a className="icon-btn" href="/shop#search" aria-label="Search products"><Search {...ICON} /></a>
+        {products.length ? <a className="icon-btn" href="/shop#search" aria-label="Search products"><Search {...ICON} /></a> : null}
         <a className="icon-btn" href="/admin/" aria-label="Staff login" title="Staff login"><UserRound {...ICON} /></a>
-        <button className="icon-btn cart-btn" onClick={() => openCart()} aria-label={`Open cart, ${count} ${count === 1 ? 'item' : 'items'}`}><ShoppingCart {...ICON} /><span className="cart-count">{count}</span></button>
+        {products.length || count ? <button className="icon-btn cart-btn" onClick={() => openCart()} aria-label={`Open cart, ${count} ${count === 1 ? 'item' : 'items'}`}><ShoppingCart {...ICON} /><span className="cart-count">{count}</span></button> : null}
         <button className="icon-btn menu-btn" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen}>{menuOpen ? <X {...ICON} /> : <Menu {...ICON} />}</button>
       </div>
       <div className={`mobile-nav ${menuOpen ? 'open' : ''}`} aria-hidden={!menuOpen} inert={menuOpen ? undefined : true}>
@@ -303,6 +310,15 @@ export function SiteHeader() {
       </div>
     </header>
   </div>
+}
+
+// Where a customer orders something that is not in the online catalogue yet: WhatsApp with the message typed
+// for them, otherwise a phone call, otherwise the contact page.
+export function orderLink(shop, message) {
+  const chat = whatsappLink(shop?.whatsapp)
+  if (chat) return `${chat}?text=${encodeURIComponent(message)}`
+  const phone = String(shop?.phone || '').replace(/[^\d+]/g, '')
+  return phone ? `tel:${phone}` : '/contact'
 }
 
 export const whatsappLink = (number) => {
@@ -341,41 +357,42 @@ export function ContactLinks({ shop }) {
 }
 
 export function SiteFooter() {
-  const { content } = useSite()
+  const { content, groups: products, reviews } = useSite()
   const categories = useMenuCategories()
   const { shop } = content
   const payOnline = Boolean(content.checkout?.paystackPublicKey)
+  const hasContact = Boolean(shop.phone || shop.whatsapp || shop.email || shop.address || shop.hours)
   const socials = ['instagram', 'tiktok', 'facebook'].map((name) => ({ name, href: webLink(shop[name]) })).filter((item) => item.href)
-  return <footer className="site-footer">
+  const hasAbout = Boolean(content.about.text || content.about.image)
+  const hasHelp = Boolean(hasAbout || reviews.length || hasContact || products.length)
+  return <footer className={`site-footer ${!hasHelp && !hasContact ? 'site-footer--preview' : ''}`}>
     <div className="footer-top">
       <div className="footer-brand">
         <a href="/" className="footer-logo" aria-label="Lordnoble Cosmetics home"><Logo onDark /></a>
-        {content.pages.footerText ? <p>{content.pages.footerText}{shop.deliveryAreas ? ` to ${shop.deliveryAreas}` : ' in Ghana'}.</p> : null}
+        {content.pages.footerText ? <p>{content.pages.footerText}.</p> : null}
         {socials.length ? <div className="footer-social">{socials.map((item) => <a key={item.name} href={item.href} target="_blank" rel="noreferrer" aria-label={item.name}><SocialIcon name={item.name} /></a>)}</div> : null}
       </div>
       <nav className="footer-col" aria-labelledby="footer-shop">
         <h2 id="footer-shop">Shop</h2>
-        <a href="/shop">All products</a>
+        <a href="/shop">{products.length ? 'All products' : 'The Lordina range'}</a>
         {categories.slice(0, 6).map((category) => <a key={category.name} href={`/shop?category=${encodeURIComponent(category.name)}`}>{category.name}</a>)}
       </nav>
-      <nav className="footer-col" aria-labelledby="footer-help">
+      {hasHelp ? <nav className="footer-col" aria-labelledby="footer-help">
         <h2 id="footer-help">Help</h2>
-        {content.layout.menu.filter((item) => item.show && ['about', 'reviews', 'contact'].includes(item.key)).map((item) => <a key={item.key} href={`/${item.key}`}>{item.label}</a>)}
-        <a href="/terms#delivery-and-pickup">Delivery and pickup</a>
-        <a href="/terms#returns-and-refunds">Returns and refunds</a>
-        <a href="/terms">Terms and conditions</a>
-      </nav>
-      {shop.phone || shop.whatsapp || shop.email || shop.address || shop.hours ? <div className="footer-col footer-contact">
+        {content.layout.menu.filter((item) => item.show && ((item.key === 'about' && (content.about.text || content.about.image)) || (item.key === 'reviews' && reviews.length) || (item.key === 'contact' && hasContact))).map((item) => <a key={item.key} href={`/${item.key}`}>{item.label}</a>)}
+        {products.length ? <><a href="/terms#delivery-and-pickup">Delivery and pickup</a><a href="/terms#returns-and-refunds">Returns and refunds</a><a href="/terms">Terms and conditions</a></> : null}
+      </nav> : null}
+      {hasContact ? <div className="footer-col footer-contact">
         <h2>Talk to us</h2>
         <ContactLinks shop={shop} />
         {shop.hours ? <span>Open {shop.hours}</span> : null}
       </div> : null}
     </div>
     {/* Only claim online payment once a Paystack key is set; until then orders are paid on delivery or pickup. */}
-    <p className="footer-pay">{payOnline ? 'Secure payment with Paystack · MTN MoMo · Telecel Cash · AirtelTigo Money · Cards' : 'Pay on delivery or when you collect · cash or mobile money'}</p>
+    {products.length ? <p className="footer-pay">{payOnline ? 'Secure payment with Paystack · MTN MoMo · Telecel Cash · AirtelTigo Money · Cards' : 'Pay on delivery or when you collect · cash or mobile money'}</p> : null}
     <WhatsAppButton number={shop.whatsapp} />
     <div className="footer-bottom">
-      <small>© {new Date().getFullYear()} {shop.legalName || 'Lordnoble Cosmetics'}. Prices in Ghana cedis (GHS).</small>
+      <small>© {new Date().getFullYear()} {shop.legalName || 'Lordnoble Cosmetics'}{products.length ? '. Prices in Ghana cedis (GHS).' : '.'}</small>
       <a className="footer-powered" href="https://stormglide.io" target="_blank" rel="noreferrer">Built by <b>Stormglide.io</b></a>
       <a className="footer-staff" href="/admin/">Staff login</a>
     </div>
