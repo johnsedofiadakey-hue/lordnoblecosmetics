@@ -110,7 +110,7 @@ export default function ShopPage() {
       {visible.length ? <div className="product-grid">{visible.map((product) => <ProductCard key={product.id} product={product} onAdded={setJustAdded} />)}</div>
         : !loaded ? <p className="shop-empty">Loading the products…</p>
           : products.length ? <div className="shop-empty"><p>Nothing matches just yet.</p><button className="btn-wine" onClick={() => choose(EMPTY)}>Show all products</button></div>
-            : <div className="shop-empty"><p>Nothing is in the online shop yet. Message us to order.</p><div className="shop-empty__contact"><ContactLinks shop={content.shop} /></div></div>}
+            : <div className="shop-empty"><p>Prices will appear here when online ordering is ready.</p><div className="shop-empty__contact"><ContactLinks shop={content.shop} /></div></div>}
     </section>
 
     <div className={`added-toast ${justAdded ? 'show' : ''}`} role="status" aria-live="polite">

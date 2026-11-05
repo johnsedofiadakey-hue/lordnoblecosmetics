@@ -1,54 +1,66 @@
-.site-top--dark::after { background: #1a1310; box-shadow: 0 1px 0 rgb(255 248 237 / .14); }
-.site-top--dark.is-scrolled::after { box-shadow: 0 10px 26px -16px rgb(0 0 0 / .65); }
-.site-top--dark .main-nav, .site-top--dark .header-actions { color: #fff8ed; }
-.site-top--dark .main-nav a:hover, .site-top--dark .icon-btn:hover { color: #e3b896; }
-.site-top--dark .main-nav > a[aria-current="page"]::after { background: #e3b896; }
-.site-top--dark .nav-drop__menu { color: var(--wine-deep); }
-.site-top--dark .nav-drop__menu a:hover { color: var(--wine); }
-.site-top--dark .mobile-nav { background: #1a1310; }
-.site-top--dark .mobile-nav a { color: #fff8ed; border-bottom-color: rgb(255 248 237 / .16); }
+/* Lordina's collection page follows the client's photo, feature, product rhythm. */
+.home .site-top::after { background: #fff; }
+.home .site-header { min-height: 80px; }
+.home .brand-logo { height: 58px; }
+.home .main-nav, .home .header-actions { color: #171717; }
 
-/* Hero: the serum, its photo and a way to order. */
-.lordina-hero { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); align-items: center; gap: clamp(32px, 5vw, 72px); padding: clamp(32px, 4vw, 56px) max(24px, calc((100vw - 1240px) / 2)); background: radial-gradient(ellipse 60% 80% at 75% 50%, #2c1f19 0%, #1a1310 70%); color: #fff8ed; }
-.lordina-hero__eyebrow { color: #e3b896; font: 600 12px/1.4 var(--sans); letter-spacing: .08em; }
-.lordina-hero h1 { max-width: 520px; margin: 14px 0 16px; color: #fff8ed; font: 500 clamp(40px, 4.6vw, 64px)/1.02 var(--serif); letter-spacing: -.015em; }
-.lordina-hero__accent { color: #e3b896; }
-.lordina-hero__text { max-width: 430px; color: #eadbd0; font-size: 16px; line-height: 1.6; }
-.lordina-hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; margin-top: 28px; }
-.lordina-hero__button { display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 22px; border-radius: 999px; background: var(--gold-grad); color: #1a1310; font-size: 14px; font-weight: 600; transition: filter .2s; }
-.lordina-hero__button:hover { filter: brightness(1.08); }
-.lordina-hero__link { padding-bottom: 3px; border-bottom: 1px solid #e3b896; color: #fff8ed; font-size: 14px; }
-.lordina-hero__link:hover { color: #e3b896; }
-.lordina-hero__facts { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 36px 0 0; padding: 18px 0 0; border-top: 1px solid rgb(255 248 237 / .14); list-style: none; color: #d9c7bb; font-size: 13px; }
-.lordina-hero__facts li { display: inline-flex; align-items: center; gap: 8px; }
-.lordina-hero__facts li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #e3b896; }
-.lordina-hero__portrait { justify-self: end; width: 100%; max-width: 620px; aspect-ratio: 5 / 6; overflow: hidden; border-radius: 6px; background: #2a1f1a; }
-.lordina-hero__portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
+.lordina-hero { position: relative; min-height: min(680px, 58vw); overflow: hidden; background: #b79f8c; color: #fff; }
+.lordina-hero::after { content: ''; position: absolute; inset: 36% 0 0; background: linear-gradient(0deg, rgb(0 0 0 / .62), transparent); pointer-events: none; }
+/* Wide screens show a thin band of the portrait; 15% keeps her head and the bottle cap in it. */
+.lordina-hero__image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 15%; }
+.lordina-hero__copy { position: absolute; z-index: 1; right: 0; bottom: clamp(30px, 5vw, 76px); left: 0; width: min(1240px, calc(100% - 48px)); margin: auto; }
+.lordina-hero__eyebrow { margin-bottom: 11px; font: 600 11px/1.4 var(--sans); letter-spacing: .18em; text-transform: uppercase; }
+.lordina-hero h1 { max-width: 650px; font: 500 clamp(55px, 6.3vw, 96px)/.94 var(--serif); letter-spacing: -.025em; }
+.lordina-hero__text { max-width: 520px; margin-top: 13px; font-size: 15px; line-height: 1.45; }
+.lordina-hero__link { display: inline-flex; align-items: center; gap: 10px; margin-top: 27px; padding-bottom: 4px; border-bottom: 1px solid rgb(255 255 255 / .8); font: 600 13px/1.3 var(--sans); letter-spacing: .1em; text-transform: uppercase; }
+.lordina-hero__link:hover { color: #f6e2c5; }
 
-/* The face cream, next to its photo. */
-.lordina-ritual { display: grid; grid-template-columns: 1fr 1fr; background: #f6f0e8; color: #261e1b; }
-.lordina-ritual__photo { height: clamp(380px, 38vw, 520px); overflow: hidden; background: #ead7cb; }
-.lordina-ritual__photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 12%; }
-.lordina-ritual__copy { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 48px clamp(28px, 6vw, 96px); }
-.lordina-ritual__copy .lordina-hero__eyebrow { color: #8f4f30; }
-.lordina-ritual h2 { max-width: 460px; margin: 12px 0 16px; font: 500 clamp(34px, 3.6vw, 50px)/1.05 var(--serif); letter-spacing: -.01em; }
-.lordina-ritual__copy > p:not(.lordina-hero__eyebrow) { max-width: 400px; color: #5a514a; font-size: 16px; line-height: 1.65; }
-.lordina-ritual__link { display: inline-flex; align-items: center; gap: 10px; margin-top: 24px; padding-bottom: 4px; border-bottom: 1px solid #8f4f30; color: #261e1b; font-size: 14px; font-weight: 600; }
-.lordina-ritual__link:hover { color: #8f4f30; }
+.lordina-feature { display: grid; grid-template-columns: 53% 47%; align-items: center; width: min(1240px, calc(100% - 48px)); min-height: 365px; margin: clamp(28px, 4vw, 56px) auto 0; background: #edf2f2; color: #171717; }
+.lordina-feature__products { display: flex; align-items: center; justify-content: center; gap: 0; height: 100%; padding: 28px 10px 28px 38px; overflow: hidden; }
+.lordina-feature__products img { width: 48%; max-height: 290px; object-fit: contain; mix-blend-mode: multiply; }
+.lordina-feature__products img + img { margin-left: -4%; }
+.lordina-feature__copy { max-width: 440px; padding: 38px 46px 38px 18px; }
+.lordina-feature__copy > span, .lordina-story__copy > span { display: block; margin-bottom: 12px; font: 600 11px/1.4 var(--sans); letter-spacing: .14em; text-transform: uppercase; }
+.lordina-feature h2 { max-width: 390px; font: 650 clamp(35px, 3.5vw, 52px)/1.04 var(--sans); letter-spacing: -.045em; }
+.lordina-feature p { max-width: 330px; margin-top: 15px; font-size: 15px; line-height: 1.55; }
+.lordina-feature a, .lordina-story a { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 43px; margin-top: 22px; padding: 0 20px; border: 1px solid #171717; font: 600 11px/1 var(--sans); letter-spacing: .13em; text-transform: uppercase; }
+.lordina-feature a:hover, .lordina-story a:hover { background: #171717; color: #fff; }
+
+.lordina-story { display: grid; grid-template-columns: 1fr 1fr; max-width: 1240px; margin: 0 auto 80px; background: #f3eee8; }
+.lordina-story__photo { min-height: 450px; overflow: hidden; }
+.lordina-story__photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+.lordina-story__copy { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 50px clamp(30px, 6vw, 90px); }
+.lordina-story h2 { max-width: 500px; font: 500 clamp(42px, 4.6vw, 68px)/.98 var(--serif); }
+.lordina-story p { max-width: 380px; margin-top: 18px; line-height: 1.65; }
 
 @media (max-width: 800px) {
-  .lordina-hero { grid-template-columns: 1fr; padding: 28px 16px 40px; }
-  /* Capped by screen height so the title and order button still show on the first screen of a tablet. */
-  .lordina-hero__portrait { grid-row: 1; justify-self: stretch; max-width: none; aspect-ratio: auto; height: min(120vw, 56svh); }
-  .lordina-hero h1 { font-size: clamp(36px, 10vw, 48px); }
-  .lordina-hero__text { font-size: 15px; }
-  .lordina-ritual { grid-template-columns: 1fr; }
-  .lordina-ritual__photo { height: 360px; }
-  .lordina-ritual__copy { padding: 32px 16px 44px; }
+  .home .site-header { min-height: 68px; }
+  .home .brand-logo { height: 48px; }
+  .lordina-hero { min-height: 510px; }
+  .lordina-hero__image { object-position: center 35%; }
+  .lordina-hero h1 { font-size: clamp(50px, 9vw, 76px); }
+  .lordina-feature { grid-template-columns: 1fr 1fr; }
+  .lordina-feature__copy { padding: 30px 25px 30px 0; }
+  .lordina-feature h2 { font-size: clamp(30px, 5vw, 42px); }
+  .lordina-story__photo { min-height: 360px; }
 }
-
-@media (max-width: 520px) {
-  .site-top--dark .site-header { gap: 8px; }
-  .site-top--dark .brand-logo { height: 42px; max-width: 175px; }
-  .site-top--dark .header-actions { gap: 8px; }
+@media (max-width: 600px) {
+  .lordina-hero { min-height: min(118vw, 560px); }
+  .lordina-hero::after { inset: 52% 0 0; }
+  .lordina-hero__copy { bottom: 27px; width: calc(100% - 42px); }
+  .lordina-hero h1 { max-width: 350px; font-size: clamp(48px, 12vw, 66px); }
+  .lordina-hero__link { margin-top: 18px; }
+  /* Stacked on phones so the words stay at a readable size. */
+  .lordina-feature { grid-template-columns: 1fr; width: calc(100% - 32px); min-height: 0; margin-top: 24px; }
+  .lordina-feature__products { padding: 24px 16px 4px; }
+  .lordina-feature__products img { width: 50%; max-height: 210px; }
+  .lordina-feature__products img + img { margin-left: -6%; }
+  .lordina-feature__copy { max-width: none; padding: 12px 22px 28px; text-align: center; }
+  .lordina-feature__copy > span { font-size: 11px; letter-spacing: .12em; }
+  .lordina-feature h2 { max-width: none; font-size: 30px; }
+  .lordina-feature p { max-width: none; margin-top: 10px; font-size: 15px; line-height: 1.5; }
+  .lordina-feature a { min-height: 44px; margin-top: 18px; padding: 0 18px; font-size: 11px; }
+  .lordina-story { grid-template-columns: 1fr; margin-bottom: 48px; }
+  .lordina-story__photo { height: 390px; min-height: 0; }
+  .lordina-story__copy { padding: 32px 22px 40px; }
 }

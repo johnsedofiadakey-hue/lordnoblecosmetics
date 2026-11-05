@@ -6,7 +6,7 @@ async function getSiteFunctions() {
   if (functions) return functions
   const [{ connectFunctionsEmulator, getFunctions }, { app }] = await Promise.all([import('firebase/functions'), import('./firebase.js')])
   functions = getFunctions(app, 'europe-west2')
-  if (import.meta.env.DEV && import.meta.env.VITE_USE_EMULATORS) connectFunctionsEmulator(functions, '127.0.0.1', 5001)
+  if (import.meta.env.DEV && import.meta.env.VITE_USE_EMULATORS) connectFunctionsEmulator(functions, '127.0.0.1', Number(import.meta.env.VITE_FUNCTIONS_EMULATOR_PORT || 5001))
   return functions
 }
 

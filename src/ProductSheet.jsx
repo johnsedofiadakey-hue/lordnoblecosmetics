@@ -93,7 +93,7 @@ export default function ProductSheet() {
 
         <ul className="sheet-facts">
           {item.size && !many ? <li><Tag {...ICON} /> <span>Size</span><b>{item.size}</b></li> : null}
-          <li><PackageCheck {...ICON} /> <span>Availability</span><b className={buyable ? 'ok' : ''}>{status}</b></li>
+          <li><PackageCheck {...ICON} /> <span>Stock</span><b className={buyable ? 'ok' : ''}>{status}</b></li>
           {inCart ? <li><ShoppingBag {...ICON} /> <span>In your cart</span><b>{inCart}</b></li> : null}
         </ul>
 

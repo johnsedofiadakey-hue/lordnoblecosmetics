@@ -215,7 +215,7 @@ export default function CheckoutDrawer() {
               <div className="method-choices" role="radiogroup" aria-label="Delivery or pickup">
                 <label className={`method-choice ${details.method === 'delivery' ? 'on' : ''}`}>
                   <input type="radio" name="method" value="delivery" checked={details.method === 'delivery'} onChange={update('method')} />
-                  <Truck {...ICON} /><span><b>Delivery</b><small>{Number.isInteger(checkout.deliveryFee) ? `Fee: ${formatGhs(checkout.deliveryFee)}` : 'Fee confirmed when we call'}</small></span>
+                  <Truck {...ICON} /><span><b>Delivery</b><small>{Number.isInteger(checkout.deliveryFee) ? `Fee: ${formatGhs(checkout.deliveryFee)}` : 'We will confirm the fee by phone'}</small></span>
                 </label>
                 {checkout.pickup ? <label className={`method-choice ${details.method === 'pickup' ? 'on' : ''}`}>
                   <input type="radio" name="method" value="pickup" checked={details.method === 'pickup'} onChange={update('method')} />

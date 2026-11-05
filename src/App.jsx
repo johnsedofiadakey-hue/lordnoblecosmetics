@@ -1,11 +1,11 @@
 import { Fragment, useEffect, useMemo, useRef } from 'react'
 import { ArrowRight, ChevronLeft, ChevronRight, Star } from 'lucide-react'
 import { ICON, pictureLink, ProductCard, SiteFooter, SiteHeader, SiteIcon, useSite } from './storefront'
-import LordinaHero from './LordinaHero'
+import LordinaHero, { LordinaFeature, LordinaStory } from './LordinaHero'
 import LordinaCollection from './LordinaCollection'
 
-// The Lordina serum leads the home page, then the face cream and the five-product range. Prices, reviews and
-// best sellers come from the catalogue and approved reviews; until a product is in the catalogue, customers order on WhatsApp.
+// The campaign leads into face care, then the five-product range. Prices and reviews come from the
+// approved catalogue; the page stays browsable while commerce details are being prepared.
 
 const BRAND_MARK = '/brand/lordnoble-mark.png'
 
@@ -47,7 +47,7 @@ export default function App() {
     if (node) node.scrollBy({ left: direction * node.clientWidth * 0.8, behavior: 'smooth' })
   }
 
-  const section_explore = <LordinaCollection products={products} />
+  const section_explore = <><LordinaCollection products={products} /><LordinaStory home={home} /></>
   const section_loved = loved.length ? <>
     <section className="section loved" aria-labelledby="loved-title">
       <div className="loved__head">
@@ -84,8 +84,9 @@ export default function App() {
   const sections = { explore: section_explore, loved: section_loved, why: section_why, reviews: section_reviews, cta: section_cta }
 
   return <main className="home">
-    <SiteHeader />
-    <LordinaHero home={home} shop={content.shop} products={products} payOnline={Boolean(content.checkout?.paystackPublicKey)} />
+    <SiteHeader dark={false} />
+    <LordinaHero home={home} />
+    <LordinaFeature home={home} />
 
     {/* The owner's order; hidden sections are left out (Admin → Website → Layout and menu). */}
     {content.layout.sections.filter((section) => section.show).map((section) => <Fragment key={section.key}>{sections[section.key]}</Fragment>)}

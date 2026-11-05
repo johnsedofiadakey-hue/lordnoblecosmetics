@@ -5,7 +5,7 @@
 // appear on the website when the owner has marked them ready, like every other product.
 export const LINES = [
   { id: 'Everyday care', label: 'Everyday care', description: 'Beauty and body care for your daily routine.' },
-  { id: 'Skin concerns', label: 'Skin concerns', description: 'Care for more specific skin questions. Read the directions and cautions before you buy.' },
+  { id: 'Skin concerns', label: 'Skin concerns', description: 'Products for specific skin needs. Read the label before you buy.' },
 ]
 
 // Needs a customer can shop by. Cosmetic language only: what a product is for, never a diagnosis.
@@ -138,26 +138,44 @@ export const SHOP_FIELDS = [
 
 export const HERO_IMAGE = '/campaign/lordina-serum-portrait.webp'
 
-// The Lordina range on the home page (Admin → Website → Home page → Lordina range). Names, sizes and claims follow
-// the packaging. An item linked to a catalogue product shows its price and Add to Cart; otherwise an order button.
+// The Lordina range on the home page (Admin → Website → Home page → Lordina range). The site leads with
+// the owner-supplied product names and cosmetic descriptions; packaging photographs remain unchanged.
 export const RANGE_GROUPS = [
   { id: 'face', label: 'For your face' },
   { id: 'body', label: 'For your body' },
 ]
 export const LORDINA_RANGE = [
-  { key: 'serum', group: 'face', name: 'Lordina Whitening Face Serum', size: '50mL', use: 'Before the face cream', text: 'A few drops on clean skin. For dark spots and uneven tone.', image: '/campaign/lordina-face-serum.webp', productId: '' },
-  { key: 'cream', group: 'face', name: 'Lordina Whitening Face Cream', size: '50g', use: 'After the serum', text: 'Keeps your face moisturised while it works on dark spots.', image: '/campaign/lordina-face-cream.webp', productId: '' },
-  { key: 'day', group: 'body', name: 'Lordina Whitening Body Lotion, Day', size: '150mL', use: 'Morning', text: 'The morning lotion. Wear sunscreen over it when you are out in the sun.', image: '/campaign/lordina-day-lotion.webp', productId: '' },
-  { key: 'night', group: 'body', name: 'Lordina Whitening Body Lotion, Night', size: '150mL', use: 'Evening', text: 'The evening lotion, for after your bath.', image: '/campaign/lordina-night-lotion.webp', productId: '' },
-  { key: 'oil', group: 'body', name: 'Lordina Whitening Body Oil', size: '120mL', use: 'After bathing', text: 'Rub into damp skin to lock in moisture.', image: '/campaign/lordina-body-oil.webp', productId: '' },
+  { key: 'serum', group: 'face', name: 'Lordina Face Serum', size: '50mL', use: 'Daily face care', text: 'A light serum that helps skin feel soft and look radiant.', image: '/campaign/lordina-face-serum.webp', productId: '' },
+  { key: 'cream', group: 'face', name: 'Lordina Face Cream', size: '50g', use: 'Daily face care', text: 'A face cream that leaves skin feeling soft and smooth.', image: '/campaign/lordina-face-cream.webp', productId: '' },
+  { key: 'day', group: 'body', name: 'Lordina Body Lotion Day', size: '150mL', use: 'Day', text: 'A light body lotion that keeps skin soft without feeling greasy.', image: '/campaign/lordina-day-lotion.webp', productId: '' },
+  { key: 'night', group: 'body', name: 'Lordina Night Lotion', size: '150mL', use: 'Night', text: 'A rich body lotion to use at night.', image: '/campaign/lordina-night-lotion.webp', productId: '' },
+  { key: 'oil', group: 'body', name: 'Lordina Body Oil', size: '120mL', use: 'Body care', text: 'A light oil that helps skin feel soft and look radiant.', image: '/campaign/lordina-body-oil.webp', productId: '' },
 ]
+
+const PRIOR_RANGE_WORDS = {
+  serum: { name: 'Lordina Whitening Face Serum', use: 'Before the face cream', text: 'A few drops on clean skin. For dark spots and uneven tone.' },
+  cream: { name: 'Lordina Whitening Face Cream', use: 'After the serum', text: 'Keeps your face moisturised while it works on dark spots.' },
+  day: { name: 'Lordina Whitening Body Lotion, Day', use: 'Morning', text: 'The morning lotion. Wear sunscreen over it when you are out in the sun.' },
+  night: { name: 'Lordina Whitening Body Lotion, Night', use: 'Evening', text: 'The evening lotion, for after your bath.' },
+  oil: { name: 'Lordina Whitening Body Oil', use: 'After bathing', text: 'Rub into damp skin to lock in moisture.' },
+}
+const PRIOR_RANGE_TEXT = {
+  serum: 'Lightweight, fast-absorbing hydration for a naturally radiant look.',
+  cream: 'Rich yet lightweight moisture for soft, smooth skin.',
+  day: 'Fast-absorbing daily hydration without a greasy feel.',
+  night: 'Deeply nourishing moisture for nighttime use.',
+  oil: 'Helps lock in moisture for a soft, luminous finish.',
+}
 
 // The owner's edits to each range item, matched by key; unknown keys are dropped and the photo order stays.
 export function cleanRange(saved) {
   return LORDINA_RANGE.map((item) => {
     const own = Array.isArray(saved) ? saved.find((entry) => entry?.key === item.key) : null
     if (!own) return { ...item }
-    const words = (key, max) => String(own[key] ?? item[key]).trim().slice(0, max)
+    const words = (key, max) => {
+      const value = String(own[key] ?? item[key]).trim().slice(0, max)
+      return value === PRIOR_RANGE_WORDS[item.key]?.[key] || (key === 'text' && value === PRIOR_RANGE_TEXT[item.key]) ? item[key] : value
+    }
     return {
       ...item,
       name: words('name', 80) || item.name,
@@ -184,24 +202,28 @@ export const DEFAULT_CONTENT = {
   // The home page (the client's reference design). Every word and picture is editable in Admin → Website.
   home: {
     topbar: [],
-    heroKicker: 'New from Lordnoble Cosmetics',
-    heroTitle: 'Lordina Whitening Face Serum',
+    heroKicker: 'The Lordina collection',
+    heroTitle: 'Radiance, every day.',
     heroAccent: '',
-    heroText: 'For dark spots and uneven skin tone. Made with glutathione and kojic acid. 50mL bottle.',
-    heroAction: 'Order the serum',
+    heroText: '',
+    heroAction: 'Explore the collection',
     heroImage: '/campaign/lordina-serum-portrait.webp',
-    heroImageAlt: 'Woman holding a bottle of Lordina Whitening Face Serum',
+    heroImageAlt: 'Woman holding a bottle of Lordina Face Serum',
     heroScript: '',
     heroBadges: [],
+    featureKicker: 'For your face',
+    featureTitle: 'Serum + cream.',
+    featureText: 'The Lordina Face Serum and Face Cream, side by side.',
+    featureAction: 'View face care',
     heroSecondImage: '/campaign/lordina-cream-moment.webp',
-    heroSecondImageAlt: 'Woman applying Lordina Whitening Face Cream from the jar',
-    heroSecondKicker: 'Use it with the serum',
-    heroSecondTitle: 'Lordina Whitening Face Cream',
-    heroSecondText: 'Smooth it over your face after the serum to keep your skin moisturised. Also made with glutathione and kojic acid. 50g jar.',
-    heroSecondAction: 'Order the face cream',
-    rangeTitle: 'The Lordina range',
-    rangeText: 'Five products, all made with glutathione and kojic acid. Two for your face, three for your body.',
-    rangeNote: 'New to lightening products? Try a little on your inner arm for a day first, and wear sunscreen when you are out in the sun.',
+    heroSecondImageAlt: 'Woman applying Lordina Face Cream from the jar',
+    heroSecondKicker: 'Face care / Daily use',
+    heroSecondTitle: 'Lordina Face Cream',
+    heroSecondText: 'A face cream that leaves skin feeling soft and smooth. 50g.',
+    heroSecondAction: 'See all products',
+    rangeTitle: 'The Lordina collection',
+    rangeText: '',
+    rangeNote: 'Prices will appear here when online ordering is ready.',
     range: LORDINA_RANGE.map((item) => ({ ...item })),
     categoriesKicker: 'Shop by category',
     categoriesTitle: 'Explore Our',
@@ -214,7 +236,7 @@ export const DEFAULT_CONTENT = {
     reviewsKicker: '',
     reviewsTitle: 'What customers say',
     ctaTitle: 'Not sure where to start?',
-    ctaText: 'Start with the face serum and cream, or message us and we will help you choose.',
+    ctaText: 'Start with the face serum and cream, or browse all five Lordina products.',
     ctaAction: 'Shop Lordina',
     ctaImage: '',
   },
@@ -253,7 +275,7 @@ export const DEFAULT_CONTENT = {
       { title: 'Who we are', body: 'This website is run by {legalName} ("Lordnoble Cosmetics", "we", "us").\nOur shop is at {address}.\nYou can reach us on {phone}.\nYou can email us at {email}.' },
       { title: 'Using this website', body: 'By using this website or placing an order, you agree to these terms.\nPlease give us true and complete details when you order.' },
       { title: 'Our products and your skin', body: 'Read the label, directions and cautions before you use any product.\nBefore you use a new product, try a little on a small area of skin first. Stop using it if your skin reacts.\nIf you are pregnant, breastfeeding, taking medicine, or have a skin condition, ask a doctor or pharmacist before use.\nOur product information helps you choose. It is not medical advice.' },
-      { title: 'Prices and payment', body: 'All prices are in Ghana cedis (GHS).\nPrices can change, but the price you pay is the price shown when you placed your order.\nWe accept secure Paystack payments, including MTN MoMo, Telecel Cash, AirtelTigo Money, cards and bank transfer where available. We never see or keep your card details.' },
+      { title: 'Prices and payment', body: 'All prices are in Ghana cedis (GHS).\nPrices can change, but the price you pay is the price shown when you placed your order.\nIf online payment is available at checkout, you can pay securely through Paystack. We do not see or keep your card details.' },
       { title: 'Your order', body: 'After you order, we contact you to confirm it.\nIf an item is out of stock or a price was wrong, we tell you. You can then change or cancel your order, and we give back any money you paid.' },
       { title: 'Delivery and pickup', body: 'We deliver to: {deliveryAreas}.\nDelivery usually takes {deliveryTime}.\nThe delivery fee is shown at checkout, or we tell you when we call.\nYou can also pick up your order at our shop ({hours}).\nPlease check your order when you receive it and tell us straight away if something is wrong.' },
       { title: 'Returns and refunds', body: 'You can return an item within {returnDays} days if it is unopened and still sealed.\nFor health and hygiene reasons, we cannot take back opened items, unless they arrived damaged or we sent the wrong item.\nIf we accept a return, we refund you within {refundDays} days, using the same way you paid.' },
@@ -297,6 +319,29 @@ const PRIOR_LORDINA_COPY = [{
   ctaTitle: 'Make room for care.',
   ctaText: 'Explore the face and body care in the Lordina collection.',
   ctaAction: 'Explore the collection',
+}, {
+  heroKicker: 'New from Lordnoble Cosmetics',
+  heroTitle: 'Lordina Whitening Face Serum',
+  heroText: 'For dark spots and uneven skin tone. Made with glutathione and kojic acid. 50mL bottle.',
+  heroAction: 'Order the serum',
+  heroImageAlt: 'Woman holding a bottle of Lordina Whitening Face Serum',
+  heroSecondImageAlt: 'Woman applying Lordina Whitening Face Cream from the jar',
+  heroSecondKicker: 'Use it with the serum',
+  heroSecondTitle: 'Lordina Whitening Face Cream',
+  heroSecondText: 'Smooth it over your face after the serum to keep your skin moisturised. Also made with glutathione and kojic acid. 50g jar.',
+  heroSecondAction: 'Order the face cream',
+  rangeTitle: 'The Lordina range',
+  rangeText: 'Five products, all made with glutathione and kojic acid. Two for your face, three for your body.',
+  rangeNote: 'New to lightening products? Try a little on your inner arm for a day first, and wear sunscreen when you are out in the sun.',
+}, {
+  heroTitle: 'Lordina Face Serum',
+  heroText: 'Lightweight, fast-absorbing hydration for a naturally radiant look. 50mL.',
+  heroAction: 'View the serum',
+  heroSecondText: 'Rich yet lightweight moisture for soft, smooth skin. 50g.',
+  heroSecondAction: 'View the face cream',
+  rangeText: 'Five face and body products, including separate lotions for day and night.',
+  rangeNote: 'Prices and availability will be confirmed before online ordering opens.',
+  ctaText: 'Start with the face serum and cream, or message us and we will help you choose.',
 }]
 
 const TEMPLATE_PAGES = {

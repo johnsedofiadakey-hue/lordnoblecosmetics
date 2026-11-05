@@ -4,7 +4,7 @@ import { connectStorageEmulator, getDownloadURL, getStorage, ref, uploadBytes } 
 import { app } from '../../cloud/firebase.js'
 
 const storage = getStorage(app)
-if (import.meta.env.DEV && import.meta.env.VITE_USE_EMULATORS) connectStorageEmulator(storage, '127.0.0.1', 9199)
+if (import.meta.env.DEV && import.meta.env.VITE_USE_EMULATORS) connectStorageEmulator(storage, '127.0.0.1', Number(import.meta.env.VITE_STORAGE_EMULATOR_PORT || 9199))
 
 export const PHOTO_TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }
 export const MAX_PHOTO_BYTES = 5 * 1024 * 1024

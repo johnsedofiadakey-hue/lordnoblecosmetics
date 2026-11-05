@@ -11,8 +11,8 @@ const TABS = [
   { value: 'shop', label: 'Shop details' },
   { value: 'home', label: 'Home page' },
   { value: 'categories', label: 'Categories' },
-  { value: 'tags', label: 'Tags and paths' },
-  { value: 'layout', label: 'Layout and menu' },
+  { value: 'tags', label: 'Shop filters' },
+  { value: 'layout', label: 'Page sections and menu' },
   { value: 'reviews', label: 'Reviews' },
   { value: 'about', label: 'About page' },
   { value: 'checkout', label: 'Checkout and payment' },
@@ -166,7 +166,6 @@ const SHOP_HINTS = {
   deliveryTime: 'e.g. 1 to 2 days',
   returnDays: 'a number, e.g. 7',
   refundDays: 'a number, e.g. 5',
-  fdaNumber: 'shown under the order button on the home page',
   instagram: 'full link, starting with https://',
   tiktok: 'full link, starting with https://',
   facebook: 'full link, starting with https://',
@@ -232,8 +231,8 @@ function IconItems({ items, count, onChange }) {
 
 const HOME_GROUPS = [
   { title: 'Hero: words', fields: [
-    ['heroKicker', 'Small label above the headline', 40], ['heroTitle', 'Headline', 100, 2], ['heroAccent', 'Optional words in gold', 40],
-    ['heroText', 'Text under the headline', 220, 3], ['heroAction', 'Order button (orders the face serum)', 30],
+    ['heroKicker', 'Small label above the headline', 40], ['heroTitle', 'Headline', 100, 2], ['heroAccent', 'Extra words in the headline', 40],
+    ['heroText', 'Text under the headline', 220, 3], ['heroAction', 'Button text (links to the products)', 30],
   ] },
   { title: 'Our most loved products', note: 'Tick “Best seller” on a product (Products tab) to show it here.', fields: [
     ['bestKicker', 'Small label above', 40], ['bestTitle', 'Heading', 60],
@@ -263,25 +262,36 @@ function HomeTab({ home, products, onChange }) {
         <TextField label="Describe the photo (for screen readers)" value={home.heroImageAlt || ''} onChange={(value) => onChange('heroImageAlt', value)} maxLength={120} />
       </div>
     </Card>
-    <Card title="Face cream scene (under the hero)">
+    <Card title="Serum and cream panel">
+      <div className="stack">
+        <p className="muted small">The panel uses the serum and cream photos from the Lordina products below.</p>
+        <div className="grid-2">
+          {field(['featureKicker', 'Small label', 40])}
+          {field(['featureTitle', 'Heading', 80])}
+          {field(['featureText', 'Text', 180, 2])}
+          {field(['featureAction', 'Button text (links to the products)', 30])}
+        </div>
+      </div>
+    </Card>
+    <RangeCard home={home} products={products} onChange={onChange} />
+    <Card title="Face cream photo (below the products)">
       <div className="stack">
         <div className="grid-2">
-          <SitePhotoField label="Second portrait" hint="shown beside the ritual text; removing it hides this scene" kind="hero-second" value={home.heroSecondImage} onChange={(value) => onChange('heroSecondImage', value)} />
+          <SitePhotoField label="Face cream photo" hint="shown below the products; removing it hides this section" kind="hero-second" value={home.heroSecondImage} onChange={(value) => onChange('heroSecondImage', value)} />
           <TextField label="Describe the photo (for screen readers)" value={home.heroSecondImageAlt || ''} onChange={(value) => onChange('heroSecondImageAlt', value)} maxLength={120} />
         </div>
         <div className="grid-2">
           {field(['heroSecondKicker', 'Small label', 40])}
           {field(['heroSecondTitle', 'Heading', 100, 2])}
           {field(['heroSecondText', 'Text', 220, 3])}
-          {field(['heroSecondAction', 'Order button (orders the face cream)', 30])}
+          {field(['heroSecondAction', 'Button text (links to the products)', 30])}
         </div>
       </div>
     </Card>
-    <RangeCard home={home} products={products} onChange={onChange} />
     {HOME_GROUPS.slice(1, 2).map((group) => <Card key={group.title} title={group.title}>
       <div className="stack">{group.note ? <p className="muted small">{group.note}</p> : null}<div className="grid-2">{group.fields.map(field)}</div></div>
     </Card>)}
-    <Card title="Why shop with us (the dark band)">
+    <Card title="Why shop with us">
       <div className="stack">
         <div className="grid-2">{field(['whyTitle', 'Heading', 30])}{field(['whyAccent', 'Heading, second line', 30])}</div>
         <IconItems items={home.whyItems} count={5} onChange={(value) => onChange('whyItems', value)} />
@@ -295,8 +305,7 @@ function HomeTab({ home, products, onChange }) {
   </div>
 }
 
-// The Lordina range on the home page. Linking an item to a product shows its price and Add to Cart; without a
-// link customers get an "Order on WhatsApp" button with the product name typed for them.
+// The Lordina range on the home page. Linking an item to a product shows its price and details.
 function RangeCard({ home, products, onChange }) {
   const range = home.range || []
   const set = (key, patch) => onChange('range', range.map((item) => (item.key === key ? { ...item, ...patch } : item)))
@@ -306,8 +315,8 @@ function RangeCard({ home, products, onChange }) {
         <TextField label="Heading" value={home.rangeTitle || ''} onChange={(value) => onChange('rangeTitle', value)} maxLength={60} />
         <TextField label="Text under the heading" value={home.rangeText || ''} onChange={(value) => onChange('rangeText', value)} maxLength={200} multiline />
       </div>
-      <TextField label="Advice box under the products (leave empty to hide)" value={home.rangeNote || ''} onChange={(value) => onChange('rangeNote', value)} maxLength={240} multiline />
-      <p className="muted small">Keep names and claims the same as the packaging. Link each product to the Products page so its price and Add to Cart show; without a link, customers see “Order on WhatsApp”.</p>
+      <TextField label="Small note under the products (leave empty to hide)" value={home.rangeNote || ''} onChange={(value) => onChange('rangeNote', value)} maxLength={240} multiline />
+      <p className="muted small">Use the approved product names and claims. Link each item to a product you added on the Products page to show its price and details. If there is no link, visitors can ask about it when a contact number is set.</p>
       {range.map((item) => <div key={item.key} className="stack">
         <b>{RANGE_GROUPS.find((group) => group.id === item.group)?.label}: {item.name}</b>
         <label className="check"><input type="checkbox" checked={item.show !== false} onChange={(event) => set(item.key, { show: event.target.checked })} /> Show on the website</label>
@@ -317,7 +326,7 @@ function RangeCard({ home, products, onChange }) {
           <TextField label="When to use it (small tag)" hint="e.g. Morning" value={item.use} onChange={(value) => set(item.key, { use: value })} maxLength={40} />
           <label className="field"><span>Product on the Products page</span>
             <select value={item.productId || ''} onChange={(event) => set(item.key, { productId: event.target.value })}>
-              <option value="">Not linked (order on WhatsApp)</option>
+              <option value="">Not linked yet</option>
               {products.map((product) => <option key={product.id} value={product.id}>{product.name}</option>)}
             </select>
           </label>
@@ -338,7 +347,7 @@ function AboutTab({ about, onChange }) {
         <SitePhotoField label="Photo" hint="optional, e.g. you or your shop" kind="about" value={about.image} onChange={(value) => onChange('image', value)} />
         <TextField label="Describe the photo (for screen readers)" value={about.imageAlt} onChange={(value) => onChange('imageAlt', value)} maxLength={120} />
       </div>
-      {about.text.trim() ? null : <p className="muted small">Until your story is written, the About page shows only your shop details.</p>}
+      {about.text.trim() ? null : <p className="muted small">Until you add your story, the About page shows a short line about Lordina.</p>}
     </div>
   </Card>
 }
@@ -682,7 +691,7 @@ function CheckoutTab({ checkout, onChange }) {
     </Card>
     <Card title="Online payment (Paystack)">
       <div className="stack">
-        <p>{key ? <Pill tone={key.startsWith('pk_live_') ? 'green' : 'amber'}>{key.startsWith('pk_live_') ? 'Live payments on' : 'Test mode'}</Pill> : <Pill tone="grey">Off</Pill>} {key ? 'Customers pay online at checkout.' : 'Customers place orders and you call them to arrange payment.'}</p>
+        <p>{key ? <Pill tone={key.startsWith('pk_live_') ? 'green' : 'amber'}>{key.startsWith('pk_live_') ? 'Live key saved' : 'Test key saved'}</Pill> : <Pill tone="grey">Off</Pill>} {key ? 'Check the full payment setup with a test order before taking real orders.' : 'Online ordering stays off until payment is set up.'}</p>
         <TextField label="Paystack public key" hint="starts with pk_live_ (or pk_test_ to try it)" value={key} onChange={(value) => onChange('paystackPublicKey', value.trim())} autoComplete="off" spellCheck={false} />
         <div className="callout warn"><Icon name="alert" /><p>Only paste the <b>public</b> key. Never paste the secret key (it starts with sk_). You find both in Paystack: Settings → API Keys and Webhooks.</p></div>
         <p className="muted small">After a customer pays, check the payment in your Paystack dashboard before you send the order. The order number is the Paystack reference.</p>

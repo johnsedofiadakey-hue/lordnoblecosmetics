@@ -3,6 +3,7 @@ import { signOut } from 'firebase/auth'
 import { LiveProvider, useAccount } from './LiveProvider.jsx'
 import { useHashRoute, useNow, useOps } from './hooks.js'
 import { auth, callFunction, readError } from './live/firebase.js'
+import { firebaseReady } from '../cloud/firebase.js'
 import { ROLE_LABEL } from '../../functions/src/core/rules.js'
 import { Dialog, Icon } from './components/ui.jsx'
 import { fmtFull } from './components/format.js'
@@ -26,8 +27,8 @@ const Help = lazy(() => import('./views/Help.jsx'))
 // Every page, who may open it, and where it sits: in the phone bar at the bottom (tab) or under More.
 const PAGES = [
   { path: 'home', label: 'Home', icon: 'home', tab: true },
-  { path: 'sell', label: 'POS', icon: 'pos', action: 'sell', tab: true },
-  { path: 'sales', label: 'POS history', short: 'History', icon: 'sale', action: 'viewSales', tab: true },
+  { path: 'sell', label: 'Sell', icon: 'pos', action: 'sell', tab: true },
+  { path: 'sales', label: 'Sales history', short: 'History', icon: 'sale', action: 'viewSales', tab: true },
   { path: 'orders', label: 'Website orders', short: 'Web orders', icon: 'cart', action: 'webOrders', tab: true },
   { path: 'drawer', label: 'Cash drawer', icon: 'drawer', action: 'sell' },
   { path: 'stock', label: 'Stock', icon: 'inventory', action: 'viewStock' },
@@ -41,6 +42,11 @@ const PAGES = [
 ]
 
 export default function AdminApp() {
+  if (!firebaseReady) return <div className="ops"><SignIn /></div>
+  return <ConnectedAdminApp />
+}
+
+function ConnectedAdminApp() {
   const account = useAccount()
   if (account.status === 'loading') return <div className="ops"><main className="admin-auth-state"><span className="eyebrow">Lordnoble Cosmetics</span><p>Checking your sign-in…</p></main></div>
   if (account.status === 'signedOut') return <div className="ops"><SignIn /></div>

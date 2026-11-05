@@ -37,8 +37,8 @@ beforeAll(() => {
 })
 
 beforeEach(async () => {
-  await fetch(`http://127.0.0.1:8080/emulator/v1/projects/${PROJECT}/databases/(default)/documents`, { method: 'DELETE' })
-  await fetch(`http://127.0.0.1:9099/emulator/v1/projects/${PROJECT}/accounts`, { method: 'DELETE' })
+  await fetch(`http://${process.env.FIRESTORE_EMULATOR_HOST || '127.0.0.1:8080'}/emulator/v1/projects/${PROJECT}/databases/(default)/documents`, { method: 'DELETE' })
+  await fetch(`http://${process.env.FIREBASE_AUTH_EMULATOR_HOST || '127.0.0.1:9099'}/emulator/v1/projects/${PROJECT}/accounts`, { method: 'DELETE' })
   await db.doc('site/catalog').set({ products })
   for (const [uid, role, name] of [[OWNER, 'owner', 'Ama Owner'], [MANAGER, 'manager', 'Kwame Manager'], [STAFF, 'staff', 'Akosua Staff']]) {
     await auth.createUser({ uid, email: `${uid}@test.dev`, password: 'secret123', displayName: name })

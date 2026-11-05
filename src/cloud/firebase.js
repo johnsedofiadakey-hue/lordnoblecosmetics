@@ -9,6 +9,7 @@ const emulated = Boolean(import.meta.env.DEV && import.meta.env.VITE_USE_EMULATO
 // The Lordnoble Cosmetics Firebase project's web app config (Firebase console → Project settings → Your apps),
 // set in .env.local. See .env.example.
 const env = import.meta.env
+export const firebaseReady = emulated || Boolean(env.VITE_FIREBASE_API_KEY && env.VITE_FIREBASE_APP_ID)
 const projectId = env.VITE_FIREBASE_PROJECT_ID || 'lordnoblecosmetics'
 const config = {
   apiKey: env.VITE_FIREBASE_API_KEY || 'demo-key',
@@ -21,4 +22,4 @@ const config = {
 
 export const app = initializeApp(config)
 export const db = getFirestore(app)
-if (emulated) connectFirestoreEmulator(db, '127.0.0.1', 8080)
+if (emulated) connectFirestoreEmulator(db, '127.0.0.1', Number(env.VITE_FIRESTORE_EMULATOR_PORT || 8080))

@@ -72,6 +72,14 @@ describe('site content', () => {
     expect(night).toMatchObject({ name: 'Night Lotion', productId: 'night-lotion', show: false, image: LORDINA_RANGE[3].image, group: 'body' })
     expect(cleanRange(null)[0]).toEqual(LORDINA_RANGE[0])
     expect(mergeContent({ home: { heroTitle: 'Before the day asks anything of you.' } }).home.heroTitle).toBe(DEFAULT_CONTENT.home.heroTitle)
+    const previous = mergeContent({ home: {
+      heroTitle: 'Lordina Whitening Face Serum',
+      rangeText: 'Five products, all made with glutathione and kojic acid. Two for your face, three for your body.',
+      range: [{ key: 'serum', name: 'Lordina Whitening Face Serum', use: 'Before the face cream', text: 'A few drops on clean skin. For dark spots and uneven tone.' }],
+    } })
+    expect(previous.home.heroTitle).toBe(DEFAULT_CONTENT.home.heroTitle)
+    expect(previous.home.rangeText).toBe(DEFAULT_CONTENT.home.rangeText)
+    expect(previous.home.range[0]).toMatchObject({ name: 'Lordina Face Serum', use: 'Daily face care', text: LORDINA_RANGE[0].text })
   })
 
   it('fills shop details into text and leaves out any line whose detail is still empty (no placeholders)', () => {

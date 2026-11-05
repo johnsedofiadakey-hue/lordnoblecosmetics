@@ -388,7 +388,7 @@ export function SiteFooter() {
       </div> : null}
     </div>
     {/* Only claim online payment once a Paystack key is set; until then orders are paid on delivery or pickup. */}
-    {products.length ? <p className="footer-pay">{payOnline ? 'Secure payment with Paystack · MTN MoMo · Telecel Cash · AirtelTigo Money · Cards' : 'Pay on delivery or when you collect · cash or mobile money'}</p> : null}
+    {products.length ? <p className="footer-pay">{payOnline ? 'Pay safely with Paystack by mobile money or card' : 'Online payment is not open yet'}</p> : null}
     <WhatsAppButton number={shop.whatsapp} />
     <div className="footer-bottom">
       <small>© {new Date().getFullYear()} {shop.legalName || 'Lordnoble Cosmetics'}{products.length ? '. Prices in Ghana cedis (GHS).' : '.'}</small>

@@ -8,8 +8,8 @@
 // Test login (emulator only): owner@lordnoble.test / emulator-owner-2026
 
 const PROJECT = 'demo-lordnoble'
-const AUTH = 'http://127.0.0.1:9099'
-const FIRESTORE = 'http://127.0.0.1:8080'
+const AUTH = `http://127.0.0.1:${process.env.LORDINA_AUTH_EMULATOR_PORT || 9099}`
+const FIRESTORE = `http://127.0.0.1:${process.env.LORDINA_FIRESTORE_EMULATOR_PORT || 8080}`
 const EMAIL = 'owner@lordnoble.test'
 const PASSWORD = 'emulator-owner-2026'
 
@@ -21,7 +21,7 @@ async function json(response) {
 
 const ping = await fetch(`${AUTH}/emulator/v1/projects/${PROJECT}/config`).catch(() => null)
 if (!ping?.ok) {
-  console.error('The Auth emulator is not running on 127.0.0.1:9099 for project demo-lordnoble. Start it with `npm run dev:emulators`.')
+  console.error(`The Auth emulator is not running at ${AUTH} for project demo-lordnoble. Start it with \`npm run dev:emulators\`.`)
   process.exit(1)
 }
 

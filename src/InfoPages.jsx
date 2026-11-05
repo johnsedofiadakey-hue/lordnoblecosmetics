@@ -29,7 +29,7 @@ export function AboutPage() {
       {image ? <div className="about__photo"><img src={image} alt={about.imageAlt || ''} /></div> : null}
       <div className="about__copy">
         {paragraphs.length ? paragraphs.map((part, i) => <p key={i}>{part}</p>)
-          : <p>Lordnoble Cosmetics sells the Lordina range of face and body care.</p>}
+          : <p>Lordina is a face and body care range from Lordnoble Cosmetics.</p>}
         <a className="btn-wine" href="/shop">Shop Lordina <ArrowRight {...ICON} /></a>
       </div>
     </section>
@@ -130,7 +130,7 @@ export function ContactPage() {
       {cards.length ? <div className="contact-grid">{cards.map(({ Icon, title, text, href, external }) => {
         const inner = <><span className="contact-card__icon"><Icon {...ICON} strokeWidth={1.4} /></span><b>{title}</b><span>{text}</span></>
         return href ? <a key={title} className="contact-card" href={href} {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}>{inner}</a> : <div key={title} className="contact-card">{inner}</div>
-      })}</div> : <p className="review-empty">You can order any Lordina product from <a href="/shop">the shop page</a>.</p>}
+      })}</div> : <p className="review-empty">You can see all Lordina products on <a href="/shop">the shop page</a>.</p>}
       {socials.length ? <div className="contact-social"><span>Follow us</span>{socials.map((item) => <a key={item.name} href={item.href} target="_blank" rel="noreferrer" aria-label={item.name}><SocialIcon name={item.name} /></a>)}</div> : null}
     </section>
     <SiteFooter />
