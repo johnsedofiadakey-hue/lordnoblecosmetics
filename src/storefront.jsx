@@ -43,8 +43,38 @@ export function ProductVisual({ product, className = '' }) {
   </div>
 }
 
+// A copy of the product photo flies into the cart button, then the button gives a small bounce.
+export function flyToCart(fromNode) {
+  const target = document.querySelector('.cart-btn')
+  if (!target) return
+  const bump = () => target.animate?.([{ transform: 'scale(1)' }, { transform: 'scale(1.28)' }, { transform: 'scale(1)' }], { duration: 420, easing: 'cubic-bezier(.3,1.6,.5,1)' })
+  const image = fromNode?.querySelector?.('img')
+  if (!image || !image.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { bump(); return }
+  const from = image.getBoundingClientRect()
+  const to = target.getBoundingClientRect()
+  const ghost = image.cloneNode()
+  Object.assign(ghost.style, { position: 'fixed', left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px`, margin: 0, padding: 0, objectFit: 'contain', zIndex: 80, pointerEvents: 'none', borderRadius: '14px', background: '#fff', boxShadow: '0 18px 40px -18px rgb(18 13 11 / .45)' })
+  document.body.appendChild(ghost)
+  const dx = to.left + to.width / 2 - (from.left + from.width / 2)
+  const dy = to.top + to.height / 2 - (from.top + from.height / 2)
+  ghost.animate([
+    { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+    { transform: `translate(${dx * 0.45}px, ${dy * 0.45 - 70}px) scale(.42)`, opacity: 0.95, offset: 0.55 },
+    { transform: `translate(${dx}px, ${dy}px) scale(.06)`, opacity: 0.3 },
+  ], { duration: 760, easing: 'cubic-bezier(.55,0,.3,1)' }).onfinish = () => { ghost.remove(); bump() }
+}
+
+// The heart on a product: saved in this browser (no account needed).
+export function WishButton({ id, name, className = '' }) {
+  const { wished, toggleWish } = useSite()
+  const on = wished(id)
+  return <button type="button" className={`wish-btn ${on ? 'on' : ''} ${className}`} onClick={() => toggleWish(id)} aria-pressed={on} aria-label={on ? `Remove ${name} from your wishlist` : `Save ${name} to your wishlist`}>
+    <Heart {...ICON} strokeWidth={1.6} />
+  </button>
+}
+
 // The product card of the reference design: photo (with Best Seller badge), name, short line, price, stars,
-// Add to Cart. Used on the home page and the shop page.
+// Add to Cart. Used on the home page.
 // `product` is a product with its sizes (groupProducts). With one size, Add to Cart adds it; with several, the
 // button opens the product so the customer picks a size first.
 export function ProductCard({ product, onAdded }) {
@@ -58,13 +88,14 @@ export function ProductCard({ product, onAdded }) {
       <ProductVisual product={product} />
       {product.bestSeller ? <span className="product-card__badge">Best Seller</span> : null}
     </button>
+    <WishButton id={product.id} name={product.name} className="product-card__wish" />
     <div className="product-card__copy">
       <h3><button className="product-card__name" onClick={() => openProduct(product.id)}>{product.name}</button></h3>
       {product.type || product.size ? <p className="product-card__line">{product.type || product.size}{many ? ` · ${product.sizes.length} sizes` : ''}</p> : null}
       <b className="product-card__price">{groupPriceLabel(product)}</b>
       {rating ? <Stars rating={rating.average} count={rating.count} /> : null}
       {many ? <button className="product-card__add" onClick={() => openProduct(product.id)}><ShoppingCart {...ICON} /> Choose size</button>
-        : <button className="product-card__add" disabled={!canBuy(single)} onClick={() => { add(single); onAdded?.(single) }}><ShoppingCart {...ICON} /> {buyLabel(single || product, inCart)}</button>}
+        : <button className="product-card__add" disabled={!canBuy(single)} onClick={(event) => { add(single); flyToCart(event.currentTarget.closest('.product-card')?.querySelector('.product-card__art')); onAdded?.(single) }}><ShoppingCart {...ICON} /> {buyLabel(single || product, inCart)}</button>}
     </div>
   </article>
 }
@@ -89,6 +120,7 @@ export function buyLabel(product, inCart = 0) {
 
 const SITE_CACHE = 'lordnoble-site'
 const CART_KEY = 'lordnoble-cart'
+const WISH_KEY = 'lordnoble-wishlist'
 
 function readJson(key) {
   try { return JSON.parse(localStorage.getItem(key) || 'null') } catch { return null }
@@ -128,8 +160,13 @@ export function SiteProvider({ children }) {
     const stored = readJson(CART_KEY)
     return stored && typeof stored === 'object' ? stored : {}
   })
-  // Checkout slides in from the side: step 0 bag, 1 details, 2 review and pay, 3 done. /checkout opens it.
-  const [checkout, setCheckout] = useState(() => ({ open: window.location.pathname.replace(/\/+$/, '') === '/checkout', step: 0 }))
+  // The cart slides in from the side; paying happens on the /checkout page.
+  const [cartOpen, setCartOpen] = useState(false)
+  // Saved products (product ids), newest first.
+  const [wishlist, setWishlist] = useState(() => {
+    const stored = readJson(WISH_KEY)
+    return Array.isArray(stored) ? stored.filter((id) => typeof id === 'string').slice(0, 60) : []
+  })
   // The product being looked at, kept in the address (?product=id) so it can be shared and Back closes it.
   const [productId, setProductId] = useState(() => new URLSearchParams(window.location.search).get('product'))
 
@@ -142,6 +179,7 @@ export function SiteProvider({ children }) {
     return () => { live = false }
   }, [])
   useEffect(() => { writeJson(CART_KEY, cart) }, [cart])
+  useEffect(() => { writeJson(WISH_KEY, wishlist) }, [wishlist])
   useEffect(() => {
     const onPop = () => setProductId(new URLSearchParams(window.location.search).get('product'))
     window.addEventListener('popstate', onPop)
@@ -175,6 +213,10 @@ export function SiteProvider({ children }) {
     setCart((items) => ({ ...items, [product.id]: Math.min(20, (items[product.id] || 0) + qty) }))
   }, [])
   const clear = useCallback(() => setCart({}), [])
+  const toggleWish = useCallback((id) => setWishlist((ids) => (ids.includes(id) ? ids.filter((item) => item !== id) : [id, ...ids].slice(0, 60))), [])
+  const wished = useCallback((id) => wishlist.includes(id), [wishlist])
+  // Only saved products that are still on the website.
+  const wishGroups = useMemo(() => wishlist.map((id) => groups.find((group) => group.id === id)).filter(Boolean), [wishlist, groups])
 
   const openProduct = useCallback((id) => {
     const url = new URL(window.location.href)
@@ -202,10 +244,8 @@ export function SiteProvider({ children }) {
   const value = {
     reviews, ratings, submitReview,
     content, products: shown, groups, cart, count, add, setQty, clear, loaded: loaded || Boolean(saved.catalog),
-    cartOpen: checkout.open, checkoutStep: checkout.step,
-    openCart: (step = 0) => setCheckout({ open: true, step: Number.isInteger(step) ? step : 0 }),
-    setCheckoutStep: (step) => setCheckout((state) => ({ ...state, step })),
-    closeCart: () => setCheckout((state) => ({ open: false, step: state.step === 3 ? 0 : state.step })),
+    cartOpen, openCart: () => setCartOpen(true), closeCart: () => setCartOpen(false),
+    wishlist: wishGroups, toggleWish, wished,
     product: productId ? groups.find((group) => group.id === productId || group.sizes.some((size) => size.id === productId)) || null : null,
     openProduct, closeProduct,
   }
@@ -254,7 +294,7 @@ export function useMenuCategories() {
 
 // Dark on every page, like the home page.
 export function SiteHeader({ dark = true }) {
-  const { count, openCart, content, groups: products, reviews } = useSite()
+  const { count, openCart, content, groups: products, reviews, wishlist } = useSite()
   const categories = useMenuCategories()
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -301,6 +341,7 @@ export function SiteHeader({ dark = true }) {
       <nav className="main-nav" aria-label="Main">{items.map(desktop)}</nav>
       <div className="header-actions">
         {products.length ? <a className="icon-btn" href="/shop#search" aria-label="Search products"><Search {...ICON} /></a> : null}
+        {products.length ? <a className="icon-btn wish-link" href="/wishlist" aria-current={current('/wishlist')} aria-label={`Wishlist, ${wishlist.length} saved`}><Heart {...ICON} />{wishlist.length ? <span className="cart-count">{wishlist.length}</span> : null}</a> : null}
         {products.length || count ? <button className="icon-btn cart-btn" onClick={() => openCart()} aria-label={`Open cart, ${count} ${count === 1 ? 'item' : 'items'}`}><ShoppingCart {...ICON} /><span className="cart-count">{count}</span></button> : null}
         <button className="icon-btn menu-btn" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen}>{menuOpen ? <X {...ICON} /> : <Menu {...ICON} />}</button>
       </div>

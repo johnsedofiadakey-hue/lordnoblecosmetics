@@ -1,292 +1,66 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowLeft, Check, CircleAlert, Lock, MapPin, Minus, Plus, Store, Trash2, Truck, X } from 'lucide-react'
+import { useEffect, useMemo, useRef } from 'react'
+import { Lock, Minus, Plus, Trash2, X } from 'lucide-react'
 import { ArrowNext, ICON, ProductVisual, useSite } from './storefront'
 import { formatGhs } from './cloud/site.js'
-import { cartLines, checkDetails, orderRequest, orderTotals, PAYMENT, paystackReference, placeOrder, verifyPayment } from './cloud/orders.js'
+import { cartLines, orderTotals } from './cloud/orders.js'
 
-// The whole checkout lives in one panel that slides in from the side. Its steps slide across inside it:
-// 0 Cart -> 1 Your details -> 2 Review and pay -> 3 Done.
-
-const DETAILS_KEY = 'lordnoble-checkout-details'
-const STEPS = ['Cart', 'Your details', 'Pay']
-const EMPTY_DETAILS = { name: '', phone: '', email: '', method: 'delivery', address: '', notes: '' }
-
-function loadPaystack() {
-  if (window.PaystackPop) return Promise.resolve(window.PaystackPop)
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script')
-    script.src = 'https://js.paystack.co/v2/inline.js'
-    script.onload = () => (window.PaystackPop ? resolve(window.PaystackPop) : reject(new Error('Paystack did not load')))
-    script.onerror = () => reject(new Error('Paystack did not load'))
-    document.head.appendChild(script)
-  })
-}
-
-function readDetails() {
-  try { return { ...EMPTY_DETAILS, ...JSON.parse(localStorage.getItem(DETAILS_KEY) || '{}'), notes: '' } } catch { return { ...EMPTY_DETAILS } }
-}
-
-function Field({ label, hint, error, children }) {
-  return <label className={`checkout-field ${error ? 'has-error' : ''}`}>
-    <span>{label}{hint ? <em>{hint}</em> : null}</span>
-    {children}
-    {error ? <small role="alert"><CircleAlert {...ICON} /> {error}</small> : null}
-  </label>
-}
-
-export default function CheckoutDrawer() {
-  const { content, products, cart, setQty, clear, cartOpen, checkoutStep: step, setCheckoutStep: setStep, closeCart, openProduct } = useSite()
-  const { checkout, shop } = content
-  const online = Boolean(checkout.paystackPublicKey)
-  const [details, setDetails] = useState(readDetails)
-  const [errors, setErrors] = useState({})
-  const [phase, setPhase] = useState({ kind: 'idle' }) // idle | paying | saving
-  const [placed, setPlaced] = useState(null)
-  const sheet = useRef(null)
-  // The same cart and details keep the same request id, so pressing Pay again never places a second order.
-  const request = useRef(null)
-  const acceptedTotal = useRef(null)
-
+// The cart, sliding in from the side on every page. Paying happens on the /checkout page.
+export default function CartDrawer() {
+  const { products, cart, setQty, cartOpen, closeCart, openProduct } = useSite()
   const lines = useMemo(() => cartLines(cart, products), [cart, products])
-  const totals = orderTotals(lines, details.method, checkout.deliveryFee)
-  const busy = phase.kind === 'paying' || phase.kind === 'saving'
-  const feeText = details.method === 'pickup' ? 'Free' : totals.deliveryFee === null ? 'We tell you when we call' : formatGhs(totals.deliveryFee)
+  const { subtotal } = orderTotals(lines, 'pickup', null)
+  const items = lines.reduce((sum, line) => sum + line.qty, 0)
+  const sheet = useRef(null)
 
-  useEffect(() => {
-    const { notes, ...remember } = details
-    try { localStorage.setItem(DETAILS_KEY, JSON.stringify(remember)) } catch { /* not remembered */ }
-  }, [details])
-
-  // Esc closes; the page behind does not scroll while the panel is open.
+  // Esc closes; the page behind does not scroll while the cart is open.
   useEffect(() => {
     if (!cartOpen) return undefined
-    const onKey = (event) => { if (event.key === 'Escape' && !busy) closeCart() }
+    const onKey = (event) => { if (event.key === 'Escape') closeCart() }
     window.addEventListener('keydown', onKey)
     const overflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    return () => { window.removeEventListener('keydown', onKey); document.body.style.overflow = overflow }
-  }, [cartOpen, busy, closeCart])
+    const timer = setTimeout(() => sheet.current?.querySelector('h2')?.focus({ preventScroll: true }), 380)
+    return () => { window.removeEventListener('keydown', onKey); document.body.style.overflow = overflow; clearTimeout(timer) }
+  }, [cartOpen, closeCart])
 
-  // Move focus to the top of each new step.
-  useEffect(() => {
-    if (!cartOpen) return
-    const pane = sheet.current?.querySelector(`[data-step="${step}"]`)
-    pane?.scrollTo?.({ top: 0 })
-    const timer = setTimeout(() => pane?.querySelector('h2')?.focus({ preventScroll: true }), 380)
-    return () => clearTimeout(timer)
-  }, [step, cartOpen])
-
-  // An emptied cart goes back to step 0.
-  useEffect(() => { if (!lines.length && (step === 1 || step === 2)) setStep(0) }, [lines.length, step, setStep])
-
-  const update = (key) => (event) => { setDetails({ ...details, [key]: event.target.value }); if (errors[key]) setErrors({ ...errors, [key]: undefined }) }
-
-  const goToPay = (event) => {
-    event.preventDefault()
-    const found = checkDetails(details, { needEmail: online, delivery: true })
-    if (details.method === 'pickup' && !checkout.pickup) found.method = 'Pickup is not available right now. Choose delivery.'
-    setErrors(found)
-    if (Object.keys(found).length) {
-      sheet.current?.querySelector('[data-step="1"] .has-error input, [data-step="1"] .has-error textarea')?.focus()
-      return
-    }
-    setPhase({ kind: 'idle' })
-    setStep(2)
-  }
-
-  const currentRequest = () => {
-    const draft = orderRequest({ cart, products, details, payment: PAYMENT.paystack })
-    const key = JSON.stringify({ ...draft, requestId: '' })
-    if (request.current?.key !== key) request.current = { key, requestId: draft.requestId }
-    return { ...draft, requestId: request.current.requestId }
-  }
-
-  const done = (order) => {
-    clear()
-    request.current = null
-    acceptedTotal.current = null
-    setPlaced(order)
-    setPhase({ kind: 'idle' })
-    setStep(3)
-  }
-
-  // The server prices the basket first; the customer then pays the server's total. It only becomes an order once
-  // Paystack confirms the payment, so a closed payment window never leaves an order behind.
-  const pay = async () => {
-    if (!online) return
-    setPhase({ kind: 'saving' })
-    let order
-    try {
-      order = await placeOrder(currentRequest())
-    } catch (error) {
-      if (error.fields) { setErrors(error.fields); setStep(1) }
-      setPhase({ kind: 'idle', notice: error.message })
-      return
-    }
-    if (order.total !== totals.total && acceptedTotal.current !== order.total) {
-      acceptedTotal.current = order.total
-      setPhase({ kind: 'idle', notice: `A price changed since you added it to your cart. Your total is now ${formatGhs(order.total)}. Press the button again to continue.` })
-      return
-    }
-    setPhase({ kind: 'paying' })
-    try {
-      const Paystack = await loadPaystack()
-      new Paystack().newTransaction({
-        key: checkout.paystackPublicKey,
-        email: order.customer.email,
-        amount: order.total,
-        currency: 'GHS',
-        reference: paystackReference(order.ref),
-        metadata: { order: order.ref, custom_fields: [{ display_name: 'Order', variable_name: 'order', value: order.ref }, { display_name: 'Phone', variable_name: 'phone', value: order.customer.phone }] },
-        onSuccess: async (transaction) => {
-          setPhase({ kind: 'saving' })
-          let status = 'pending'
-          try { status = (await verifyPayment(order.ref, transaction?.reference)).status } catch { status = 'pending' }
-          done({ ...order, payment: { ...order.payment, status } })
-        },
-        onCancel: () => setPhase({ kind: 'idle', notice: 'Payment was cancelled. You have not been charged and no order was placed. Press Pay to try again.' }),
-        onError: () => setPhase({ kind: 'idle', notice: 'Paystack could not start the payment. Please try again.' }),
-      })
-    } catch {
-      setPhase({ kind: 'idle', notice: 'We could not open Paystack. Check your internet and try again.' })
-    }
-  }
-
-  const close = () => { if (!busy) closeCart() }
-  const tab = (index) => (cartOpen && step === index ? 0 : -1)
-
-  return <aside className={`shop-panel checkout-drawer ${cartOpen ? 'open' : ''}`} aria-hidden={!cartOpen}>
-    <button className="panel-backdrop" onClick={close} aria-label="Close checkout" tabIndex={-1} />
-    <div ref={sheet} className="panel-sheet drawer-sheet" role="dialog" aria-modal="true" aria-label="Checkout">
-      <header className="drawer-head">
-        {step === 1 || step === 2
-          ? <button className="drawer-icon" onClick={() => setStep(step - 1)} disabled={busy} aria-label="Back" tabIndex={cartOpen ? 0 : -1}><ArrowLeft {...ICON} /></button>
-          : <span className="drawer-icon-space" />}
-        <ol className="drawer-steps" aria-label="Checkout steps">
-          {STEPS.map((label, index) => <li key={label} className={index < step ? 'done' : index === step ? 'current' : ''} aria-current={index === step ? 'step' : undefined}>
-            <span className="step-dot">{index < step ? <Check {...ICON} /> : index + 1}</span><span className="step-label">{label}</span>
-          </li>)}
-        </ol>
-        <button className="drawer-icon" onClick={close} disabled={busy} aria-label="Close checkout" tabIndex={cartOpen ? 0 : -1}><X {...ICON} /></button>
+  return <aside className={`shop-panel checkout-drawer ${cartOpen ? 'open' : ''}`} aria-hidden={!cartOpen} inert={cartOpen ? undefined : true}>
+    <button className="panel-backdrop" onClick={closeCart} aria-label="Close cart" tabIndex={-1} />
+    <div ref={sheet} className="panel-sheet drawer-sheet" role="dialog" aria-modal="true" aria-labelledby="cart-title">
+      <header className="cart-head">
+        <h2 id="cart-title" tabIndex={-1}>Your cart{items ? <small>{items} {items === 1 ? 'item' : 'items'}</small> : null}</h2>
+        <button className="drawer-icon" onClick={closeCart} aria-label="Close cart"><X {...ICON} /></button>
       </header>
-      <div className="drawer-progress" aria-hidden="true"><i style={{ width: `${(Math.min(step, 2) + 1) / 3 * 100}%` }} /></div>
 
-      <div className="drawer-viewport">
-        <div className="drawer-track" style={{ transform: `translateX(-${step * 100}%)` }}>
-
-          {/* 0 · Cart */}
-          <section className="drawer-pane" data-step="0" inert={step !== 0 || !cartOpen ? true : undefined}>
-            <div className="drawer-scroll">
-              <h2 tabIndex={-1}>Your cart</h2>
-              {lines.length ? <ul className="cart-lines">{lines.map((line) => {
-                const product = products.find((item) => item.id === line.id)
-                return <li className="cart-line" key={line.id}>
-                  <button className="cart-line-art" onClick={() => openProduct(line.id)} aria-label={`See ${line.name}`}><ProductVisual product={product} /></button>
-                  <div className="cart-line-info">
-                    <span className="eyebrow">{line.size || line.brand}</span>
-                    <b>{line.name}</b>
-                    <small>{formatGhs(line.price)} each</small>
-                    <div className="qty" role="group" aria-label={`Quantity of ${line.name}`}>
-                      <button onClick={() => setQty(line.id, line.qty - 1)} aria-label={line.qty === 1 ? 'Remove' : 'One less'}>{line.qty === 1 ? <Trash2 {...ICON} /> : <Minus {...ICON} />}</button>
-                      <span aria-live="polite">{line.qty}</span>
-                      <button onClick={() => setQty(line.id, line.qty + 1)} aria-label="One more" disabled={line.qty >= 20}><Plus {...ICON} /></button>
-                    </div>
-                  </div>
-                  <b className="cart-line-total">{formatGhs(line.lineTotal)}</b>
-                </li>
-              })}</ul> : <div className="cart-empty"><p>Your cart is empty.</p><a className="button dark" href="/shop">Go to the shop <ArrowNext /></a></div>}
-            </div>
-            {lines.length ? <div className="drawer-foot">
-              <div className="drawer-total"><span>Items total</span><b>{formatGhs(totals.subtotal)}</b></div>
-              <p className="drawer-note">Delivery fee comes next.</p>
-              <button className="button dark drawer-cta" onClick={() => setStep(1)} tabIndex={tab(0)}>Continue to checkout <ArrowNext /></button>
-              <button className="drawer-link" onClick={close} tabIndex={tab(0)}>Keep shopping</button>
-            </div> : null}
-          </section>
-
-          {/* 1 · Your details */}
-          <form className="drawer-pane" data-step="1" onSubmit={goToPay} noValidate inert={step !== 1 || !cartOpen ? true : undefined}>
-            <div className="drawer-scroll">
-              <h2 tabIndex={-1}>Your details</h2>
-              <Field label="Full name" error={errors.name}><input value={details.name} onChange={update('name')} autoComplete="name" /></Field>
-              <Field label="Phone number" hint="We call you on this number" error={errors.phone}><input value={details.phone} onChange={update('phone')} inputMode="tel" autoComplete="tel" placeholder="024 123 4567" /></Field>
-              <Field label="Email" hint={online ? 'For your payment receipt' : 'Optional'} error={errors.email}><input value={details.email} onChange={update('email')} type="email" inputMode="email" autoComplete="email" /></Field>
-              <h3 className="drawer-subhead">How do you want to get it?</h3>
-              <div className="method-choices" role="radiogroup" aria-label="Delivery or pickup">
-                <label className={`method-choice ${details.method === 'delivery' ? 'on' : ''}`}>
-                  <input type="radio" name="method" value="delivery" checked={details.method === 'delivery'} onChange={update('method')} />
-                  <Truck {...ICON} /><span><b>Delivery</b><small>{Number.isInteger(checkout.deliveryFee) ? `Fee: ${formatGhs(checkout.deliveryFee)}` : 'We will confirm the fee by phone'}</small></span>
-                </label>
-                {checkout.pickup ? <label className={`method-choice ${details.method === 'pickup' ? 'on' : ''}`}>
-                  <input type="radio" name="method" value="pickup" checked={details.method === 'pickup'} onChange={update('method')} />
-                  <Store {...ICON} /><span><b>Pick up at the shop</b><small>Free</small></span>
-                </label> : null}
+      <div className="drawer-scroll">
+        {lines.length ? <ul className="cart-lines">{lines.map((line) => {
+          const product = products.find((item) => item.id === line.id)
+          return <li className="cart-line" key={line.id}>
+            <button className="cart-line-art" onClick={() => openProduct(line.id)} aria-label={`See ${line.name}`}><ProductVisual product={product} /></button>
+            <div className="cart-line-info">
+              {line.size ? <span className="eyebrow">{line.size}</span> : null}
+              <b>{line.name}</b>
+              <small>{formatGhs(line.price)} each</small>
+              <div className="qty" role="group" aria-label={`Quantity of ${line.name}`}>
+                <button onClick={() => setQty(line.id, line.qty - 1)} aria-label={line.qty === 1 ? 'Remove' : 'One less'}>{line.qty === 1 ? <Trash2 {...ICON} /> : <Minus {...ICON} />}</button>
+                <span aria-live="polite">{line.qty}</span>
+                <button onClick={() => setQty(line.id, line.qty + 1)} aria-label="One more" disabled={line.qty >= 20}><Plus {...ICON} /></button>
               </div>
-              {errors.method ? <p className="checkout-error" role="alert"><CircleAlert {...ICON} /> {errors.method}</p> : null}
-              {details.method === 'delivery'
-                ? <Field label="Delivery address" hint="Add a landmark or GPS address" error={errors.address}><textarea rows={3} value={details.address} onChange={update('address')} autoComplete="street-address" /></Field>
-                : <p className="pickup-info"><MapPin {...ICON} /> {shop.address || 'We send you the shop address when we call.'}{shop.hours ? ` · Open ${shop.hours}` : ''}</p>}
-              <Field label="Note for us" hint="Optional"><textarea rows={2} value={details.notes} onChange={update('notes')} maxLength={500} /></Field>
             </div>
-            <div className="drawer-foot">
-              <div className="drawer-total"><span>Total so far</span><b>{formatGhs(totals.total)}</b></div>
-              <button className="button dark drawer-cta" type="submit" tabIndex={tab(1)}>Review your order <ArrowNext /></button>
-            </div>
-          </form>
-
-          {/* 2 · Review and pay */}
-          <section className="drawer-pane" data-step="2" inert={step !== 2 || !cartOpen ? true : undefined}>
-            <div className="drawer-scroll">
-              <h2 tabIndex={-1}>Review and pay</h2>
-              <div className="review-block">
-                <div className="review-head"><b>Items</b><button className="drawer-link inline" onClick={() => setStep(0)} disabled={busy} tabIndex={tab(2)}>Change</button></div>
-                <ul className="review-lines">{lines.map((line) => <li key={line.id}><span>{line.qty} × {line.name}</span><b>{formatGhs(line.lineTotal)}</b></li>)}</ul>
-              </div>
-              <div className="review-block">
-                <div className="review-head"><b>{details.method === 'delivery' ? 'Delivery to' : 'Pickup'}</b><button className="drawer-link inline" onClick={() => setStep(1)} disabled={busy} tabIndex={tab(2)}>Change</button></div>
-                <p>{details.name} · {details.phone}{details.email ? ` · ${details.email}` : ''}</p>
-                <p className="muted-line">{details.method === 'delivery' ? details.address : (shop.address || 'At our shop')}</p>
-              </div>
-              <dl className="review-sum">
-                <div><dt>Items</dt><dd>{formatGhs(totals.subtotal)}</dd></div>
-                <div><dt>{details.method === 'pickup' ? 'Pickup' : 'Delivery'}</dt><dd>{feeText}</dd></div>
-                <div className="summary-total"><dt>{online ? 'You pay now' : 'Total'}</dt><dd>{formatGhs(totals.total)}</dd></div>
-              </dl>
-              {totals.deliveryFee === null && details.method === 'delivery' ? <p className="drawer-note">You pay the delivery fee when your order arrives.</p> : null}
-              {phase.notice ? <p className="checkout-error" role="alert"><CircleAlert {...ICON} /> {phase.notice}</p> : null}
-            </div>
-            <div className="drawer-foot">
-              <button className="button dark drawer-cta" onClick={pay} disabled={busy || !lines.length || !online} tabIndex={tab(2)}>
-                {busy ? (phase.kind === 'paying' ? 'Waiting for Paystack…' : 'Getting your payment ready…') : online ? <><Lock {...ICON} /> Pay {formatGhs(totals.total)}</> : 'Online ordering opens soon'}
-              </button>
-              <p className="drawer-note">{online ? 'You pay safely with Paystack (card or mobile money). Your order is placed once your payment is confirmed.' : `We only take paid orders, and online payment is not open yet.${shop.phone ? ` Call ${shop.phone} to order.` : ''}`} By ordering you agree to our <a href="/terms" target="_blank" rel="noreferrer">terms</a>.</p>
-            </div>
-          </section>
-
-          {/* 3 · Done */}
-          <section className="drawer-pane" data-step="3" inert={step !== 3 || !cartOpen ? true : undefined}>
-            <div className="drawer-scroll drawer-done">
-              {placed ? <>
-                <span className="done-icon"><Check {...ICON} /></span>
-                <h2 tabIndex={-1}>Thank you, {placed.customer.name.split(' ')[0]}.</h2>
-                <p className="done-ref">Your order number is <b>{placed.ref}</b>.</p>
-                {placed.trackCode && placed.payment.status === 'paid' ? <a className="button dark done-track" href={`/t/${placed.trackCode}`}>Track your order <ArrowNext /></a> : null}
-                <p>{placed.payment.status === 'paid' ? `We have your payment of ${formatGhs(placed.total)}.`
-                  : `Total: ${formatGhs(placed.total)}. Paystack is still confirming your payment. Your order is placed the moment it does, and we text you.`}</p>
-                <h3 className="drawer-subhead">What happens next</h3>
-                <ol className="done-steps">
-                  <li>We call you on <b>{placed.customer.phone}</b> to confirm.</li>
-                  <li>{placed.fulfilment.method === 'delivery' ? `We deliver to: ${placed.fulfilment.address}.` : 'You pick up your order at our shop.'}</li>
-                </ol>
-              </> : <h2 tabIndex={-1}>Thank you.</h2>}
-            </div>
-            <div className="drawer-foot">
-              <button className="button dark drawer-cta" onClick={() => { closeCart(); setStep(0) }} tabIndex={tab(3)}>Keep shopping <ArrowNext /></button>
-            </div>
-          </section>
-        </div>
+            <b className="cart-line-total">{formatGhs(line.lineTotal)}</b>
+          </li>
+        })}</ul> : <div className="cart-empty">
+          <img src="/brand/lordnoble-mark-dark.png" alt="" width="355" height="369" />
+          <p>Your cart is empty.</p>
+          <a className="ln-btn" href="/shop">Go to the shop <ArrowNext /></a>
+        </div>}
       </div>
+
+      {lines.length ? <div className="drawer-foot">
+        <div className="drawer-total"><span>Subtotal</span><b>{formatGhs(subtotal)}</b></div>
+        <p className="drawer-note">Delivery is added at checkout.</p>
+        <a className="ln-btn ln-btn--foil drawer-cta" href="/checkout"><Lock {...ICON} /> Checkout <ArrowNext /></a>
+        <button className="drawer-link" onClick={closeCart}>Keep shopping</button>
+      </div> : null}
     </div>
   </aside>
 }
-

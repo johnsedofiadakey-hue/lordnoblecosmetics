@@ -33,6 +33,22 @@ export default function App() {
   const { home } = content
   const rail = useRef(null)
   useEffect(() => { document.title = 'Lordina | Lordnoble Cosmetics' }, [])
+  useEffect(() => {
+    if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
+    const nodes = document.querySelectorAll('.lordina-feature, .lordina-range__intro, .lordina-range__item, .lordina-story__photo, .lordina-story__copy, .home .loved, .home .why, .home .reviews, .home .cta')
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return
+        entry.target.classList.add('is-visible')
+        observer.unobserve(entry.target)
+      })
+    }, { threshold: 0.1, rootMargin: '0px 0px -24px 0px' })
+    nodes.forEach((node) => {
+      node.classList.add('motion-item')
+      observer.observe(node)
+    })
+    return () => observer.disconnect()
+  }, [home, products.length, reviews.length])
 
   const whyItems = (home.whyItems || []).filter((item) => item?.label?.trim())
   // Most loved: the owner's best sellers, otherwise every product on show.

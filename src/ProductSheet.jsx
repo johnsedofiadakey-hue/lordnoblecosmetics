@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Check, CircleAlert, Minus, PackageCheck, Plus, ShoppingBag, Tag, X } from 'lucide-react'
-import { ArrowNext, groupPriceLabel, ICON, ProductVisual, Stars, useSite } from './storefront'
+import { ArrowNext, flyToCart, groupPriceLabel, ICON, ProductVisual, Stars, useSite, WishButton } from './storefront'
 import { ReviewForm } from './InfoPages'
 import { canBuy, formatGhs, lineLabel } from './cloud/site.js'
 
@@ -62,8 +62,8 @@ export default function ProductSheet() {
   const status = !item.inStock ? 'Out of stock' : !item.price ? 'Price on request' : 'In stock'
   const many = sizeItems.length > 1
 
-  const addToCart = () => { add(item, chosen); setAdded(chosen); setQty(1) }
-  const buyNow = () => { add(item, chosen); closeProduct(); openCart(0) }
+  const addToCart = () => { add(item, chosen); flyToCart(dialog.current?.querySelector('.sheet-art')); setAdded(chosen); setQty(1) }
+  const buyNow = () => { add(item, chosen); window.location.assign('/checkout') }
 
   return <div className="product-sheet open">
     <button className="sheet-backdrop" onClick={closeProduct} aria-label="Close product" tabIndex={-1} />
@@ -79,7 +79,7 @@ export default function ProductSheet() {
       </div>
       <div className="sheet-info">
         <span className="eyebrow">{[lineLabel(content.lines, product.line), product.category].filter(Boolean).join(' · ')}</span>
-        <h2 id="sheet-title">{product.name}</h2>
+        <div className="sheet-title-row"><h2 id="sheet-title">{product.name}</h2><WishButton id={product.id} name={product.name} className="sheet-wish" /></div>
         {ratings[product.id] ? <Stars rating={ratings[product.id].average} count={ratings[product.id].count} /> : null}
         {product.type ? <p className="sheet-type">{product.type}</p> : null}
         <p className="sheet-price">{item.price ? formatGhs(item.price) : 'Price on request'}</p>
@@ -112,7 +112,7 @@ export default function ProductSheet() {
             <button className="button sheet-buy-now" onClick={buyNow}>Buy now <ArrowNext /></button>
           </div> : <p className="sheet-note">You have the most we allow in one order ({MAX}).</p>}
           <div className={`sheet-added ${added ? 'show' : ''}`} role="status" aria-live="polite">
-            {added ? <><Check {...ICON} /> <span>Added {added} to your cart.</span><button onClick={() => { closeProduct(); openCart(0) }}>View cart</button></> : null}
+            {added ? <><Check {...ICON} /> <span>Added {added} to your cart.</span><button onClick={() => { closeProduct(); openCart() }}>View cart</button></> : null}
           </div>
         </div> : <p className="sheet-note">{!item.inStock ? 'This product is out of stock right now. Please check again soon.' : 'Contact us for the price of this product.'}</p>}
 

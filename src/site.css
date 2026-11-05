@@ -408,5 +408,4 @@ a.contact-card:hover { border-color: var(--wine); }
 .track-help small { color: var(--muted); }
 .track-missing { display: grid; justify-items: center; gap: 14px; max-width: 520px; margin: auto; padding: 30px; text-align: center; color: var(--muted); }
 .track-missing svg { color: var(--wine); font-size: 32px; }
-.done-track { margin: 6px 0 16px; }
 @media (max-width: 900px) { .track-grid { grid-template-columns: 1fr; } .track-status, .track-summary { padding: 18px; } }
