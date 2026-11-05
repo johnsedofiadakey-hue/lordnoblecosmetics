@@ -10,7 +10,7 @@ const emulated = Boolean(import.meta.env.DEV && import.meta.env.VITE_USE_EMULATO
 // set in .env.local. See .env.example.
 const env = import.meta.env
 export const firebaseReady = emulated || Boolean(env.VITE_FIREBASE_API_KEY && env.VITE_FIREBASE_APP_ID)
-const projectId = env.VITE_FIREBASE_PROJECT_ID || 'lordnoblecosmetics'
+const projectId = env.VITE_FIREBASE_PROJECT_ID || 'lordnoblecosmeticsgh'
 const config = {
   apiKey: env.VITE_FIREBASE_API_KEY || 'demo-key',
   authDomain: env.VITE_FIREBASE_AUTH_DOMAIN || `${projectId}.firebaseapp.com`,
