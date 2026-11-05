@@ -13,7 +13,7 @@
 .lordina-hero__copy { position: absolute; z-index: 1; right: 0; bottom: clamp(30px, 5vw, 76px); left: 0; width: min(1240px, calc(100% - 48px)); margin: auto; }
 .lordina-hero__eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 11px; font: 600 11px/1.4 var(--sans); letter-spacing: .18em; text-transform: uppercase; }
 .lordina-hero__eyebrow::before { content: ''; width: 28px; height: 1px; background: #e7ba8d; }
-.lordina-hero h1 { max-width: 650px; font: 500 clamp(55px, 6.3vw, 96px)/.94 var(--serif); letter-spacing: -.025em; }
+.lordina-hero h1 { max-width: 650px; font: 500 clamp(55px, 6.3vw, 96px)/.94 var(--serif); letter-spacing: -.008em; }
 .lordina-hero__text { max-width: 520px; margin-top: 13px; font-size: 15px; line-height: 1.45; }
 .lordina-hero__link { display: inline-flex; align-items: center; gap: 10px; margin-top: 27px; padding-bottom: 4px; border-bottom: 1px solid rgb(255 255 255 / .8); font: 600 13px/1.3 var(--sans); letter-spacing: .1em; text-transform: uppercase; transition: gap .25s ease, color .25s ease; }
 .lordina-hero__link:hover { gap: 18px; color: #f6e2c5; }

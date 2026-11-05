@@ -424,7 +424,7 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; width: 100%; }
 @media (min-width: 900px) { .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .website-preview { padding: 18px 20px; border-radius: 14px; background: #120d0b; color: #fffdf9; }
 .website-preview em { color: #e3b896; }
-.website-preview h3 { margin: 8px 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 34px; font-weight: 600; line-height: 1; letter-spacing: -.03em; }
+.website-preview h3 { margin: 8px 0; font-family: 'Bodoni Moda', 'Didot', Georgia, serif; font-size: 34px; font-weight: 600; line-height: 1; letter-spacing: -.03em; }
 .website-preview h3 em { font-style: normal; font-weight: 300; }
 .website-preview p { color: #d5d4e8; margin: 0; }
 .website-preview .muted { color: #b9b7d3; }
