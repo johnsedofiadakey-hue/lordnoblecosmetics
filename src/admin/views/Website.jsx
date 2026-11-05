@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { addDoc, collection, doc, getDoc, getDocs, runTransaction, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore/lite'
 import { db } from '../../cloud/firebase.js'
-import { checkReview, cleanProduct, cleanReview, HOME_SECTIONS, RANGE_GROUPS, ICON_CHOICES, MAX_TAGS, groupProducts, mergeCatalog, MAX_CATEGORIES, mergeContent, parseGhs, SHOP_FIELDS } from '../../cloud/site.js'
+import { checkReview, cleanProduct, cleanReview, HOME_SECTIONS, RANGE_GROUPS, ICON_CHOICES, MAX_TAGS, groupProducts, mergeCatalog, MAX_CATEGORIES, mergeContent, parseGhs, SHOP_FIELDS, SOCIALS } from '../../cloud/site.js'
 import { checkLogo, checkSitePhoto, uploadLogo, uploadSitePhoto } from '../live/storage.js'
 import { EditorGate } from '../cloud.jsx'
 import { Card, Icon, Pill, Segmented } from '../components/ui.jsx'
@@ -166,13 +166,14 @@ const SHOP_HINTS = {
   deliveryTime: 'e.g. 1 to 2 days',
   returnDays: 'a number, e.g. 7',
   refundDays: 'a number, e.g. 5',
-  instagram: 'full link, starting with https://',
-  tiktok: 'full link, starting with https://',
-  facebook: 'full link, starting with https://',
+  instagram: 'your @handle, or the full link',
+  tiktok: 'your @handle, or the full link',
+  snapchat: 'your @username, or the full link',
+  facebook: 'your page name, or the full link',
 }
 
 function ShopTab({ shop, onChange }) {
-  const missing = SHOP_FIELDS.filter((field) => !['instagram', 'tiktok', 'facebook'].includes(field.key) && !String(shop[field.key] || '').trim())
+  const missing = SHOP_FIELDS.filter((field) => !SOCIALS.some((social) => social.key === field.key) && !String(shop[field.key] || '').trim())
   return <Card title="Shop details">
     <div className="stack">
       {missing.length ? <div className="callout warn"><Icon name="alert" /><p>Still empty, so the website leaves them out (and skips any terms sentence that needs them): {missing.map((field) => field.label).join(', ')}.</p></div> : <p className="good-text">All shop details are filled in.</p>}

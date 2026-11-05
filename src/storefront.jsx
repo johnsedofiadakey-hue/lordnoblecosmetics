@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { ArrowRight, ArrowUpRight, BadgeCheck, Brush, ChevronDown, Droplet, Flower, Flower2, Gem, Gift, Heart, Leaf, Mail, MapPin, Menu, MessageCircle, Phone, PersonStanding, Plus, Search, ShieldCheck, ShoppingBag, ShoppingCart, Smile, Sparkles, Star, Sun, Truck, X } from 'lucide-react'
-import { canBuy, formatGhs, groupProducts, mergeCatalog, mergeContent, ratingsByProduct } from './cloud/site.js'
+import { canBuy, formatGhs, groupProducts, mergeCatalog, mergeContent, ratingsByProduct, socialLinks } from './cloud/site.js'
 
 // Shared by every public page: website content (from the admin editor), the cart, header, footer and cart panel.
 
@@ -17,10 +17,11 @@ export function SiteIcon({ name, strokeWidth = 1.4 }) {
   return <Glyph {...ICON} strokeWidth={strokeWidth} />
 }
 
-// Instagram, TikTok and Facebook marks (Lucide has no brand icons).
+// Instagram, TikTok, Snapchat and Facebook marks (Lucide has no brand icons).
 export function SocialIcon({ name }) {
   const common = { width: '1em', height: '1em', viewBox: '0 0 24 24', 'aria-hidden': true, focusable: false }
   if (name === 'instagram') return <svg {...common} fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4.2" /><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none" /></svg>
+  if (name === 'snapchat') return <svg {...common} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"><path d="M12 3.2c3 0 5 2.2 5 5.1v2.4c.7.1 1.3-.4 1.9-.2.5.2.4.8-.1 1.1-.6.4-1.7.6-1.7 1.3.3 1.5 1.9 3.2 3.6 3.6.4.1.3.6-.1.8-.7.3-1.6.3-1.9.6-.2.4-.1 1.1-.6 1.2-.6.1-1.4-.3-2.4 0-.9.3-1.8 1.6-3.7 1.6s-2.8-1.3-3.7-1.6c-1-.3-1.8.1-2.4 0-.5-.1-.4-.8-.6-1.2-.3-.3-1.2-.3-1.9-.6-.4-.2-.5-.7-.1-.8 1.7-.4 3.3-2.1 3.6-3.6 0-.7-1.1-.9-1.7-1.3-.5-.3-.6-.9-.1-1.1.6-.2 1.2.3 1.9.2V8.3c0-2.9 2-5.1 5-5.1Z" /></svg>
   if (name === 'tiktok') return <svg {...common} fill="currentColor"><path d="M16.6 3c.4 2.2 1.8 3.7 4 3.9v3.2a7.4 7.4 0 0 1-4-1.2v6.2a5.9 5.9 0 1 1-5.9-5.9c.3 0 .7 0 1 .1v3.3a2.7 2.7 0 1 0 1.8 2.5V3h3.1Z" /></svg>
   return <svg {...common} fill="currentColor"><path d="M13.5 21v-7.7h2.6l.4-3h-3V8.4c0-.9.3-1.5 1.5-1.5h1.6V4.2c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H7.8v3h2.6V21h3.1Z" /></svg>
 }
@@ -273,13 +274,13 @@ function TopBar() {
   const { content } = useSite()
   const { shop, home } = content
   const messages = (home.topbar || []).map((text, i) => ({ text: String(text || '').trim(), Icon: TOPBAR_ICONS[i % TOPBAR_ICONS.length] })).filter((item) => item.text)
-  const socials = ['instagram', 'tiktok', 'facebook'].map((name) => ({ name, href: webLink(shop[name]) })).filter((item) => item.href)
+  const socials = socialLinks(shop)
   if (!messages.length && !socials.length) return null
   return <div className="topbar">
     <div className="topbar__inner">
       <ul className="topbar__messages">{messages.map(({ text, Icon }) => <li key={text}><Icon {...ICON} /> {text}</li>)}</ul>
       <div className="topbar__end">
-        {socials.length ? <div className="topbar__social">{socials.map((item) => <a key={item.name} href={item.href} target="_blank" rel="noreferrer" aria-label={item.name}><SocialIcon name={item.name} /></a>)}</div> : null}
+        {socials.length ? <div className="topbar__social">{socials.map((item) => <a key={item.name} href={item.href} target="_blank" rel="noreferrer" aria-label={item.label}><SocialIcon name={item.name} /></a>)}</div> : null}
         <span className="topbar__currency">GHS</span>
       </div>
     </div>
@@ -333,7 +334,7 @@ export function SiteHeader({ dark = true }) {
   const mobile = (item) => item.key === 'categories'
     ? categoryLinks.map((link) => <a key={`c-${link.label}`} className="sub" href={link.href} onClick={close}>{link.label}</a>)
     : <a key={item.key} href={HREF[item.key] || '/shop'} onClick={close}>{item.label}</a>
-  const hasTopbar = (content.home.topbar || []).some((message) => String(message || '').trim()) || ['instagram', 'tiktok', 'facebook'].some((name) => webLink(content.shop[name]))
+  const hasTopbar = (content.home.topbar || []).some((message) => String(message || '').trim()) || socialLinks(content.shop).length > 0
   return <div className={`site-top ${dark ? 'site-top--dark' : ''} ${!hasTopbar ? 'site-top--no-topbar' : ''} ${scrolled ? 'is-scrolled' : ''}`}>
     <TopBar />
     <header className="site-header">
@@ -368,7 +369,6 @@ export const whatsappLink = (number) => {
 }
 
 // Links typed into the admin editor: only web links, never javascript: or data: URLs.
-export const webLink = (text) => (/^https:\/\/[^\s"'<>]+$/i.test(String(text || '').trim()) ? String(text).trim() : null)
 
 // A plain "chat with us" button, the way most Ghanaian shoppers ask questions. Only when a WhatsApp number is set.
 function WhatsAppButton({ number }) {
@@ -396,45 +396,69 @@ export function ContactLinks({ shop }) {
   </>
 }
 
+// Words that drift across the gold band at the top of the footer.
+const FOOTER_BAND = ['Lordina', 'Face care', 'Body care', 'Glow every day', 'Lordnoble Cosmetics']
+
 export function SiteFooter() {
   const { content, groups: products, reviews } = useSite()
   const categories = useMenuCategories()
   const { shop } = content
   const payOnline = Boolean(content.checkout?.paystackPublicKey)
   const hasContact = Boolean(shop.phone || shop.whatsapp || shop.email || shop.address || shop.hours)
-  const socials = ['instagram', 'tiktok', 'facebook'].map((name) => ({ name, href: webLink(shop[name]) })).filter((item) => item.href)
-  const hasAbout = Boolean(content.about.text || content.about.image)
-  const hasHelp = Boolean(hasAbout || reviews.length || hasContact || products.length)
-  return <footer className={`site-footer ${!hasHelp && !hasContact ? 'site-footer--preview' : ''}`}>
-    <div className="footer-top">
-      <div className="footer-brand">
-        <a href="/" className="footer-logo" aria-label="Lordnoble Cosmetics home"><Logo onDark /></a>
-        {content.pages.footerText ? <p>{content.pages.footerText}.</p> : null}
-        {socials.length ? <div className="footer-social">{socials.map((item) => <a key={item.name} href={item.href} target="_blank" rel="noreferrer" aria-label={item.name}><SocialIcon name={item.name} /></a>)}</div> : null}
-      </div>
-      <nav className="footer-col" aria-labelledby="footer-shop">
-        <h2 id="footer-shop">Shop</h2>
-        <a href="/shop">{products.length ? 'All products' : 'The Lordina range'}</a>
-        {categories.slice(0, 6).map((category) => <a key={category.name} href={`/shop?category=${encodeURIComponent(category.name)}`}>{category.name}</a>)}
-      </nav>
-      {hasHelp ? <nav className="footer-col" aria-labelledby="footer-help">
-        <h2 id="footer-help">Help</h2>
-        {content.layout.menu.filter((item) => item.show && ((item.key === 'about' && (content.about.text || content.about.image)) || (item.key === 'reviews' && reviews.length) || (item.key === 'contact' && hasContact))).map((item) => <a key={item.key} href={`/${item.key}`}>{item.label}</a>)}
-        {products.length ? <><a href="/terms#delivery-and-pickup">Delivery and pickup</a><a href="/terms#returns-and-refunds">Returns and refunds</a><a href="/terms">Terms and conditions</a></> : null}
-      </nav> : null}
-      {hasContact ? <div className="footer-col footer-contact">
-        <h2>Talk to us</h2>
-        <ContactLinks shop={shop} />
-        {shop.hours ? <span>Open {shop.hours}</span> : null}
-      </div> : null}
+  const socials = socialLinks(shop)
+  const helpLinks = content.layout.menu.filter((item) => item.show && ((item.key === 'about' && (content.about.text || content.about.image)) || (item.key === 'reviews' && reviews.length) || (item.key === 'contact' && hasContact)))
+  const band = [...FOOTER_BAND, ...FOOTER_BAND]
+  return <footer className="site-footer ln-footer">
+    <div className="ln-footer__band" aria-hidden="true">
+      <div className="ln-footer__band-track">{[0, 1].map((copy) => <span key={copy}>{band.map((word, i) => <span key={`${word}-${i}`}>{word}<i>✦</i></span>)}</span>)}</div>
     </div>
-    {/* Only claim online payment once a Paystack key is set; until then orders are paid on delivery or pickup. */}
-    {products.length ? <p className="footer-pay">{payOnline ? 'Pay safely with Paystack by mobile money or card' : 'Online payment is not open yet'}</p> : null}
+
+    <div className="ln-footer__inner">
+      <section className="ln-footer__hello" aria-labelledby="footer-hello">
+        <span className="ln-kicker">{socials.length ? 'Follow the glow' : 'Lordnoble Cosmetics'}</span>
+        <h2 id="footer-hello">Glow with <em>us.</em></h2>
+        {content.pages.footerText ? <p>{content.pages.footerText}.</p> : null}
+        {socials.length ? <ul className="ln-footer__socials">{socials.map((item) => <li key={item.name}>
+          <a className={`ln-social ln-social--${item.name}`} href={item.href} target="_blank" rel="noreferrer">
+            <span className="ln-social__icon"><SocialIcon name={item.name} /></span>
+            <span className="ln-social__text"><b>{item.label}</b>{item.handle ? <small>{item.handle}</small> : null}</span>
+            <ArrowNext />
+          </a>
+        </li>)}</ul> : <a className="ln-btn ln-btn--foil ln-footer__cta" href="/shop">Shop the range <ArrowNext /></a>}
+      </section>
+
+      <div className="ln-footer__cols">
+        <nav className="ln-footer__col" aria-labelledby="footer-shop">
+          <h2 id="footer-shop">Shop</h2>
+          <a href="/shop">{products.length ? 'All products' : 'The Lordina range'}</a>
+          {categories.slice(0, 6).map((category) => <a key={category.name} href={`/shop?category=${encodeURIComponent(category.name)}`}>{category.name}</a>)}
+          <a href="/wishlist">Your wishlist</a>
+        </nav>
+        <nav className="ln-footer__col" aria-labelledby="footer-help">
+          <h2 id="footer-help">Help</h2>
+          {helpLinks.map((item) => <a key={item.key} href={`/${item.key}`}>{item.label}</a>)}
+          {products.length ? <><a href="/terms#delivery-and-pickup">Delivery and pickup</a><a href="/terms#returns-and-refunds">Returns and refunds</a></> : null}
+          <a href="/terms">Terms and conditions</a>
+        </nav>
+        {hasContact ? <div className="ln-footer__col ln-footer__contact">
+          <h2>Talk to us</h2>
+          <ContactLinks shop={shop} />
+          {shop.hours ? <span>Open {shop.hours}</span> : null}
+        </div> : null}
+      </div>
+    </div>
+
+    <div className="ln-footer__word" aria-hidden="true"><span>Lordnoble</span></div>
+
     <WhatsAppButton number={shop.whatsapp} />
-    <div className="footer-bottom">
+    <div className="ln-footer__bottom">
       <small>© {new Date().getFullYear()} {shop.legalName || 'Lordnoble Cosmetics'}{products.length ? '. Prices in Ghana cedis (GHS).' : '.'}</small>
-      <a className="footer-powered" href="https://stormglide.io" target="_blank" rel="noreferrer">Built by <b>Stormglide.io</b></a>
-      <a className="footer-staff" href="/admin/">Staff login</a>
+      {/* Only claim online payment once a Paystack key is set; until then orders are paid on delivery or pickup. */}
+      {products.length ? <small>{payOnline ? 'Pay safely with Paystack by mobile money or card' : 'Online payment is not open yet'}</small> : null}
+      <span className="ln-footer__credits">
+        <a href="https://stormglide.io" target="_blank" rel="noreferrer">Built by <b>Stormglide.io</b></a>
+        <a href="/admin/">Staff login</a>
+      </span>
     </div>
   </footer>
 }

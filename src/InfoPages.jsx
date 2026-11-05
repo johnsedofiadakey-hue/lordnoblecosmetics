@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowRight, Clock, Mail, MapPin, MessageCircle, Phone, Star, Truck } from 'lucide-react'
-import { ICON, pictureLink, SiteFooter, SiteHeader, SocialIcon, useSite, webLink, whatsappLink } from './storefront'
-import { checkReview, cleanReview } from './cloud/site.js'
+import { ICON, pictureLink, SiteFooter, SiteHeader, SocialIcon, useSite, whatsappLink } from './storefront'
+import { checkReview, cleanReview, socialLinks } from './cloud/site.js'
 
 // About Us, Reviews and Contact: the extra pages in the client's reference menu. Their words come from
 // Admin → Website (About page, Reviews, Shop details).
@@ -111,7 +111,7 @@ export function ContactPage() {
   const { content } = useSite()
   const { shop } = content
   const wa = whatsappLink(shop.whatsapp)
-  const socials = ['instagram', 'tiktok', 'facebook'].map((name) => ({ name, href: webLink(shop[name]) })).filter((item) => item.href)
+  const socials = socialLinks(shop)
   useEffect(() => { document.title = 'Contact — Lordnoble Cosmetics' }, [])
   const cards = [
     shop.phone ? { Icon: Phone, title: 'Call us', text: shop.phone, href: `tel:${shop.phone.replace(/\s/g, '')}` } : null,
@@ -131,7 +131,7 @@ export function ContactPage() {
         const inner = <><span className="contact-card__icon"><Icon {...ICON} strokeWidth={1.4} /></span><b>{title}</b><span>{text}</span></>
         return href ? <a key={title} className="contact-card" href={href} {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}>{inner}</a> : <div key={title} className="contact-card">{inner}</div>
       })}</div> : <p className="review-empty">You can see all Lordina products on <a href="/shop">the shop page</a>.</p>}
-      {socials.length ? <div className="contact-social"><span>Follow us</span>{socials.map((item) => <a key={item.name} href={item.href} target="_blank" rel="noreferrer" aria-label={item.name}><SocialIcon name={item.name} /></a>)}</div> : null}
+      {socials.length ? <div className="contact-social"><span>Follow us</span>{socials.map((item) => <a key={item.name} href={item.href} target="_blank" rel="noreferrer" aria-label={item.label}><SocialIcon name={item.name} /></a>)}</div> : null}
     </section>
     <SiteFooter />
   </main>

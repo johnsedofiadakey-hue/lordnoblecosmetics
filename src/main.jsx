@@ -16,6 +16,7 @@ import './shop-panel.css'
 import './panels.css'
 import './lordnoble-extras.css'
 import './shop.css'
+import './footer.css'
 
 // One bundle, several pages (Firebase rewrites every path here). Anything unknown shows the home page.
 // Product details and the cart slide over every page; paying happens on /checkout.

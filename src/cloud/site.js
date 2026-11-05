@@ -131,10 +131,33 @@ export const SHOP_FIELDS = [
   { key: 'returnDays', label: 'Days to return an item' },
   { key: 'refundDays', label: 'Days to send a refund' },
   { key: 'fdaNumber', label: 'FDA Ghana registration number' },
-  { key: 'instagram', label: 'Instagram link' },
-  { key: 'tiktok', label: 'TikTok link' },
-  { key: 'facebook', label: 'Facebook link' },
+  { key: 'instagram', label: 'Instagram' },
+  { key: 'tiktok', label: 'TikTok' },
+  { key: 'snapchat', label: 'Snapchat' },
+  { key: 'facebook', label: 'Facebook' },
 ]
+
+// Social accounts, in the order the website shows them. The owner types an @handle or pastes the full link.
+export const SOCIALS = [
+  { key: 'instagram', label: 'Instagram', url: (handle) => `https://www.instagram.com/${handle}` },
+  { key: 'tiktok', label: 'TikTok', url: (handle) => `https://www.tiktok.com/@${handle}` },
+  { key: 'snapchat', label: 'Snapchat', url: (handle) => `https://www.snapchat.com/add/${handle}` },
+  { key: 'facebook', label: 'Facebook', url: (handle) => `https://www.facebook.com/${handle}` },
+]
+
+// { name, label, href, handle } for each account the owner filled in. Only https links or plain handles.
+export function socialLinks(shop) {
+  return SOCIALS.map((social) => {
+    const value = String(shop?.[social.key] || '').trim()
+    if (/^https:\/\/[^\s"'<>]+$/i.test(value)) {
+      let last = ''
+      try { last = new URL(value).pathname.split('/').filter(Boolean).pop() || '' } catch { last = '' }
+      return { name: social.key, label: social.label, href: value, handle: last ? `@${last.replace(/^@/, '')}` : '' }
+    }
+    const handle = value.replace(/^@/, '')
+    return /^[A-Za-z0-9._-]{1,30}$/.test(handle) ? { name: social.key, label: social.label, href: social.url(handle), handle: `@${handle}` } : null
+  }).filter(Boolean)
+}
 
 export const HERO_IMAGE = '/campaign/lordina-serum-portrait.webp'
 
